@@ -1,9 +1,9 @@
-import sys
-import os
 import glob
 import json
-from siirto.exceptions import SiirtoException
-from typing import List, Any
+import os
+import time
+import psycopg2
+
 from siirto.plugins.full_load.full_load_base import FullLoadBase
 from siirto.shared.enums import PlugInType
 
@@ -11,18 +11,6 @@ from siirto.shared.enums import PlugInType
 class PgDefaultCDCPlugin(FullLoadBase):
     """
     Postgres CDC default plugin.
-
-    :param output_folder_location: location to write the Copy
-        command data
-    :type output_folder_location: str
-    :param connection: postgres connection object
-    :type connection: psycopg2 connection object
-    :param table_names: table names to be copied. Table name should
-        be schema.table_name. for example, public.user_detail
-    :type table_names: List[str]
-    :param buffer_size: buffer size (no of lines) before creating
-        a new cdc file
-    :type buffer_size: int
     """
 
     # plugin type and plugin name
@@ -30,35 +18,21 @@ class PgDefaultCDCPlugin(FullLoadBase):
     plugin_name = "PGDefaultFullLoad"
 
     def __init(self,
-               output_folder_location: str = None,
-               connection: Any = None,
-               table_names: List[str] = [],
-               buffer_size: int = 1000,
                *args,
                **kwargs) -> None:
-        if output_folder_location is None:
-            raise ValueError("output_folder_location is empty")
-        if connection is None:
-            raise ValueError("Connection is None")
-        if table_names is None \
-                or not isinstance(table_names, type(list)):
-            raise ValueError("Table name is None or Empty")
         super().__init__(*args, **kwargs)
-        self.output_folder_location = output_folder_location
-        self.status = "not started"
-        self.cursor = None
-        self.connection = connection
-        # move this to operator class
-        self.connection.autocommit = True
-        self.table_names = table_names
-        self.is_running = True
 
-    def _set_status(self, status):
+    def _set_status(self, status: str):
+        """
+        Set the status of the running plugin
+        :param status: status
+        """
         self.status = status
 
     def execute(self):
         self._set_status("in progress - started")
-        cursor = self.connection.cursor()
+        connection = psycopg2.connect(self.connection_string)
+        cursor = connection.cursor()
         slot_name = "siirto_slot"
 
         # create the slot, if doesn't already exists
@@ -134,3 +108,6 @@ class PgDefaultCDCPlugin(FullLoadBase):
                 cursor.execute(f"SELECT 1 FROM  pg_logical_slot_get_changes('{slot_name}', "
                                f"'{max_lsn}', NULL, 'pretty-print', '1', "
                                f"'add-tables', '{tables_string}');")
+            # sleep for one second, before next pool
+            time.sleep(1)
+        self._set_status("stopped")
