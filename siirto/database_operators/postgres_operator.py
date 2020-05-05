@@ -47,6 +47,7 @@ class PostgresOperator(BaseDataBaseOperator):
         full_load_jobs = []
 
         # start full load
+        # cdc for each table will run in new process
         if self.load_type in [LoadType.Full_Load, LoadType.Full_Load_And_CDC]:
             if len(self.table_names) == 0:
                 connection = psycopg2.connect(self.connection_string)
@@ -60,6 +61,7 @@ class PostgresOperator(BaseDataBaseOperator):
             for table_name in self.table_names:
 
                 output_location_of_table = os.path.join(self.output_location,
+                                                        "full_load",
                                                         table_name.replace(".", "_"))
                 if not os.path.exists(output_location_of_table):
                     os.mkdir(output_location_of_table)
@@ -79,9 +81,12 @@ class PostgresOperator(BaseDataBaseOperator):
                 full_load_process.start()
 
         # start CDC
+        # this will run on main thread
         if self.load_type in [LoadType.CDC, LoadType.Full_Load_And_CDC]:
+            output_location_for_cdc = os.path.join(self.output_location,
+                                                   "cdc")
             cdc_init_params = {
-                "output_folder_location": self.output_location,
+                "output_folder_location": output_location_for_cdc,
                 "connection_string": self.connection_string,
                 "table_names": self.table_names,
             }

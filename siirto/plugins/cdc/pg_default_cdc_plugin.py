@@ -61,7 +61,13 @@ class PgDefaultCDCPlugin(FullLoadBase):
             else:
                 file_index = max(file_indexes) + 1
 
+            cdc_folder_for_table = os.path.join(self.output_folder_location,
+                                                table_name.replace(".", "_"))
+            if not os.path.exists(cdc_folder_for_table):
+                os.mkdir(cdc_folder_for_table)
+
             file_to_write = os.path.join(self.output_folder_location,
+                                         table_name.replace(".", "_"),
                                          f"{table_name}_cdc_{file_index}.csv")
             current_table_cdc_file_name[table_name] = {
                 'file_to_write': file_to_write,
@@ -97,6 +103,7 @@ class PgDefaultCDCPlugin(FullLoadBase):
                         output_file.write("\n".join(rows_collected[table_name]))
                         new_file_index = name_and_index['index'] + 1
                         new_file_to_write = os.path.join(self.output_folder_location,
+                                                         table_name.replace(".", "_"),
                                                          f"{table_name}_cdc_{new_file_index}.csv")
                         current_table_cdc_file_name[table_name] = {
                             'file_to_write': new_file_to_write,
