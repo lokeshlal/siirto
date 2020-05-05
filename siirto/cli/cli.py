@@ -1,2 +1,5 @@
+from siirto.settings import initialize
+
+
 def main():
-    pass
+    initialize()

@@ -14,8 +14,8 @@ class PgDefaultCDCPlugin(FullLoadBase):
     """
 
     # plugin type and plugin name
-    plugin_type = PlugInType.Full_Load
-    plugin_name = "PGDefaultFullLoad"
+    plugin_type = PlugInType.CDC
+    plugin_name = "PGDefaultCDC"
 
     def __init(self,
                *args,

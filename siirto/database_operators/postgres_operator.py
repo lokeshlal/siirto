@@ -14,7 +14,7 @@ class PostgresOperator(BaseDataBaseOperator):
     """
 
     operator_type = DatabaseOperatorType.Postgres
-    name = "Postgres-Default"
+    operator_name = "Postgres-Default"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -45,8 +45,6 @@ class PostgresOperator(BaseDataBaseOperator):
     def execute(self):
 
         full_load_jobs = []
-
-        # self.configuration.get("cdc", "output_folder_location")
 
         # start full load
         if self.load_type in [LoadType.Full_Load, LoadType.Full_Load_And_CDC]:

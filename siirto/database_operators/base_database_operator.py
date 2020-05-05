@@ -34,7 +34,7 @@ class BaseDataBaseOperator(Base):
     # operator type for the operator
     operator_type = None
     # operator name, which will go in configuration
-    name = None
+    operator_name = None
 
     def __init__(self,
                  connection_string: str,
