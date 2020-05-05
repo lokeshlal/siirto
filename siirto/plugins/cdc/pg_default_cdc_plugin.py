@@ -22,7 +22,7 @@ class PgDefaultCDCPlugin(FullLoadBase):
     :type table_names: List[str]
     :param buffer_size: buffer size (no of lines) before creating
         a new cdc file
-    :type buffer_szie: int
+    :type buffer_size: int
     """
 
     # plugin type and plugin name
