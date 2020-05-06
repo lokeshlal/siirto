@@ -2,6 +2,7 @@ import glob
 import json
 import os
 import time
+import re
 
 import psycopg2
 
@@ -50,20 +51,23 @@ class PgDefaultCDCPlugin(CDCBase):
 
         current_table_cdc_file_name = {}
         for table_name in self.table_names:
-            file_indexes = [int(index.replace(f"{table_name}_cdc_", "").replace(".csv", ""))
-                            for index in glob.glob(f"{table_name}_cdc_*.csv")]
-            if len(file_indexes) == 0:
-                file_index = 0
-            else:
+            table_name_in_folder = table_name.replace(".", "_")
+            cdc_folder_for_table = os.path.join(self.output_folder_location,
+                                                table_name_in_folder)
+
+            file_indexes = [int(file_name.replace(f"{table_name}_cdc_", "").replace(".csv", ""))
+                            for file_name in list(os.listdir(cdc_folder_for_table))
+                            if re.search(f"^{table_name}_cdc_.*.csv$", file_name)]
+
+            file_index = 1
+            if len(file_indexes) > 0:
                 file_index = max(file_indexes) + 1
 
-            cdc_folder_for_table = os.path.join(self.output_folder_location,
-                                                table_name.replace(".", "_"))
             if not os.path.exists(cdc_folder_for_table):
                 os.mkdir(cdc_folder_for_table)
 
             file_to_write = os.path.join(self.output_folder_location,
-                                         table_name.replace(".", "_"),
+                                         table_name_in_folder,
                                          f"{table_name}_cdc_{file_index}.csv")
             current_table_cdc_file_name[table_name] = {
                 'file_to_write': file_to_write,

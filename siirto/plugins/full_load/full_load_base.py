@@ -1,3 +1,5 @@
+import importlib
+import os
 from typing import Callable
 
 from siirto.base import Base
@@ -61,4 +63,8 @@ class FullLoadBase(Base):
 
     @classmethod
     def load_derived_classes(cls):
-        from siirto.plugins.full_load.pg_default_full_load_plugin import PgDefaultFullLoadPlugin
+        current_directory_path = os.path.dirname(__file__)
+        plugin_files = [file_path.replace(".py", "") for file_path in os.listdir(current_directory_path)
+                        if file_path.endswith("_plugin.py")]
+        for plugin_file in plugin_files:
+            importlib.import_module(f"siirto.plugins.full_load.{plugin_file}")

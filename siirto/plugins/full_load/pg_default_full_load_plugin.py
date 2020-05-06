@@ -1,5 +1,6 @@
 import os
 import psycopg2
+import shutil
 
 from siirto.plugins.full_load.full_load_base import FullLoadBase
 from siirto.shared.enums import PlugInType
@@ -26,8 +27,10 @@ class PgDefaultFullLoadPlugin(FullLoadBase):
         self._set_status("in progress - started")
         connection = psycopg2.connect(self.connection_string)
         cursor = connection.cursor()
-        copy_query = f"\\COPY {self.table_name} TO program 'split -dl 1000000 " \
-                     f"--a _{self.table_name}.csv' (format csv)"
+        # copy_query = f"\\COPY {self.table_name} TO program 'split -dl 1000000 " \
+        #              f"--a _{self.table_name}.csv' (format csv)"
+        shutil.rmtree(self.output_folder_location)
+        os.makedirs(self.output_folder_location)
         file_to_write = os.path.join(self.output_folder_location, f"{self.table_name}_full.csv")
         with open(file_to_write, "w") as output_file:
             cursor.copy_to(output_file, self.table_name)

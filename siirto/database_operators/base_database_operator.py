@@ -1,3 +1,5 @@
+import importlib
+import os
 from typing import List
 
 from siirto.shared.enums import LoadType, DatabaseOperatorType
@@ -85,4 +87,8 @@ class BaseDataBaseOperator(Base):
 
     @classmethod
     def load_derived_classes(cls):
-        from siirto.database_operators.postgres_operator import PostgresOperator
+        current_directory_path = os.path.dirname(__file__)
+        plugin_files = [file_path.replace(".py", "") for file_path in os.listdir(current_directory_path)
+                        if file_path.endswith("_operator.py")]
+        for plugin_file in plugin_files:
+            importlib.import_module(f"siirto.database_operators.{plugin_file}")
