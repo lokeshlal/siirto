@@ -59,9 +59,6 @@ class CDCBase(Base):
 
     @classmethod
     def get_object(cls, plugin_name: str):
-        print([sub_class.__base__ for sub_class in CDCBase.__subclasses__()
-               if sub_class.plugin_type == PlugInType.CDC
-               and sub_class.plugin_name == plugin_name])
         return next((sub_class for sub_class in CDCBase.__subclasses__()
                      if sub_class.plugin_type == PlugInType.CDC
                      and sub_class.plugin_name == plugin_name), None)

@@ -72,6 +72,8 @@ class BaseDataBaseOperator(Base):
             raise ValueError(f"Incorrect value provided for load type {self.load_type}")
         if not isinstance(self.table_names, list):
             raise ValueError(f"Table names `{self.table_names}` should be list or None")
+        if len(self.table_names) == 0:
+            raise ValueError(f"Table names `{self.table_names}` should not be empty")
 
     def execute(self):
         """

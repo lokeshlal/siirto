@@ -1,13 +1,11 @@
-import psycopg2
-import os
-from typing import Dict
 import multiprocessing
-import importlib
+import os
+from typing import Dict, Any, List
 
 from siirto.database_operators.base_database_operator import BaseDataBaseOperator
 from siirto.plugins.cdc.cdc_base import CDCBase
 from siirto.plugins.full_load.full_load_base import FullLoadBase
-from siirto.shared.enums import DatabaseOperatorType, PlugInType, LoadType
+from siirto.shared.enums import DatabaseOperatorType, LoadType
 
 
 class PostgresOperator(BaseDataBaseOperator):
@@ -47,6 +45,43 @@ class PostgresOperator(BaseDataBaseOperator):
 
         # start full load
         # cdc for each table will run in new process
+        full_load_jobs = self._process_full_load(full_load_jobs)
+
+        # start CDC
+        # this will run on main thread
+        self._process_cdc()
+
+        # always wait for CDC processes to be completed
+        for full_load_job in full_load_jobs:
+            full_load_job.join()
+
+    def _process_cdc(self):
+        """
+        Process the CDC workloads
+        """
+        if self.load_type in [LoadType.CDC, LoadType.Full_Load_And_CDC]:
+            output_location_for_cdc = os.path.join(self.output_location,
+                                                   "cdc")
+            if not os.path.exists(self.output_location):
+                os.mkdir(self.output_location)
+            if not os.path.exists(output_location_for_cdc):
+                os.mkdir(output_location_for_cdc)
+            cdc_init_params = {
+                "output_folder_location": output_location_for_cdc,
+                "connection_string": self.connection_string,
+                "table_names": self.table_names,
+            }
+            cdc_object = self.cdc_plugin(**cdc_init_params)
+            cdc_object.execute()
+
+    def _process_full_load(self, full_load_jobs: List[Any]):
+        """
+        Process the full load jobs.
+        One process/job for every table.
+        :param full_load_jobs: captures the processes
+        :type full_load_jobs: List
+        :return: full_load_jobs
+        """
         if self.load_type in [LoadType.Full_Load, LoadType.Full_Load_And_CDC]:
             for table_name in self.table_names:
                 full_load_output_location_of_table = os.path.join(self.output_location,
@@ -69,30 +104,11 @@ class PostgresOperator(BaseDataBaseOperator):
                     args=(self.full_load_plugin_name, full_load_init_params))
                 full_load_jobs.append(full_load_process)
                 full_load_process.start()
-
-        # start CDC
-        # this will run on main thread
-        if self.load_type in [LoadType.CDC, LoadType.Full_Load_And_CDC]:
-            output_location_for_cdc = os.path.join(self.output_location,
-                                                   "cdc")
-            if not os.path.exists(self.output_location):
-                os.mkdir(self.output_location)
-            if not os.path.exists(output_location_for_cdc):
-                os.mkdir(output_location_for_cdc)
-            cdc_init_params = {
-                "output_folder_location": output_location_for_cdc,
-                "connection_string": self.connection_string,
-                "table_names": self.table_names,
-            }
-            cdc_object = self.cdc_plugin(**cdc_init_params)
-            cdc_object.execute()
-
-        # always wait for CDC processes to be completed
-        for full_load_job in full_load_jobs:
-            full_load_job.join()
+        return full_load_jobs
 
     @staticmethod
-    def _run_full_load_process_for_table(full_load_plugin_name: str, full_load_init_params: Dict) -> None:
+    def _run_full_load_process_for_table(full_load_plugin_name: str,
+                                         full_load_init_params: Dict) -> None:
         """
         Worker process for Full load process to complete
         :param full_load_plugin_name: plugin to be used
