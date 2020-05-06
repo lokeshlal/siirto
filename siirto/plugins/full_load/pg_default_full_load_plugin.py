@@ -12,11 +12,11 @@ class PgDefaultFullLoadPlugin(FullLoadBase):
 
     # plugin type and plugin name
     plugin_type = PlugInType.Full_Load
-    plugin_name = "PGDefaultFullLoad"
+    plugin_name = "PgDefaultFullLoadPlugin"
 
-    def __init(self,
-               *args,
-               **kwargs) -> None:
+    def __init__(self,
+                 *args,
+                 **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
     def _set_status(self, status):
@@ -32,13 +32,19 @@ class PgDefaultFullLoadPlugin(FullLoadBase):
         with open(file_to_write, "w") as output_file:
             cursor.copy_to(output_file, self.table_name)
         self._set_status("in progress - bulk file created")
-        split_command = f'split -dl 1000000 {self.table_name}_full.csv --a _{self.table_name}.csv'
+        split_command = f'cd {self.output_folder_location} && split ' \
+                        f'-dl 1000000 {file_to_write} --a _{self.table_name}.csv'
         os.system(split_command)
         self._set_status("in progress - smaller files created")
+        if len(os.listdir(self.output_folder_location)) == 1:
+            new_file_name = os.path.join(self.output_folder_location, f"x00__{self.table_name}.csv")
+            os.rename(file_to_write, new_file_name)
+        else:
+            os.remove(file_to_write)
         self._set_status("completed")
         if self.notify_on_completion is not None:
             self.notify_on_completion(
-                {
+                **{
                     'status': 'success',
                     'table_name': self.table_name,
                     'error': None

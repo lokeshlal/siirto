@@ -1,4 +1,5 @@
-from typing import List, Any
+from typing import List
+
 from siirto.base import Base
 from siirto.shared.enums import PlugInType
 
@@ -27,18 +28,18 @@ class CDCBase(Base):
     plugin_type = PlugInType.CDC
     plugin_name = None
 
-    def __init(self,
-               output_folder_location: str = None,
-               connection_string: str = None,
-               table_names: List[str] = [],
-               *args,
-               **kwargs) -> None:
+    def __init__(self,
+                 output_folder_location: str = None,
+                 connection_string: str = None,
+                 table_names: List[str] = [],
+                 *args,
+                 **kwargs) -> None:
         if output_folder_location is None:
             raise ValueError("output_folder_location is empty")
         if connection_string is None:
             raise ValueError("Connection string is None")
         if table_names is None \
-                or not isinstance(table_names, type(list)):
+                or not isinstance(table_names, list):
             raise ValueError("Table name is None or Empty")
         self.output_folder_location = output_folder_location
         self.connection_string = connection_string
@@ -53,3 +54,16 @@ class CDCBase(Base):
         This is the main method to derive when implementing an operator.
         """
         raise NotImplementedError()
+
+    @classmethod
+    def get_object(cls, plugin_name: str):
+        print([sub_class.__base__ for sub_class in CDCBase.__subclasses__()
+               if sub_class.plugin_type == PlugInType.CDC
+               and sub_class.plugin_name == plugin_name])
+        return next((sub_class for sub_class in CDCBase.__subclasses__()
+                     if sub_class.plugin_type == PlugInType.CDC
+                     and sub_class.plugin_name == plugin_name), None)
+
+    @classmethod
+    def load_derived_classes(cls):
+        from siirto.plugins.cdc.pg_default_cdc_plugin import PgDefaultCDCPlugin

@@ -1,6 +1,5 @@
-import psycopg2
+from typing import Callable
 
-from typing import Callable, Any
 from siirto.base import Base
 from siirto.shared.enums import PlugInType
 
@@ -28,13 +27,13 @@ class FullLoadBase(Base):
     plugin_type = PlugInType.Full_Load
     plugin_name = None
 
-    def __init(self,
-               output_folder_location: str = None,
-               connection_string: str = None,
-               table_name: str = None,
-               notify_on_completion: Callable[[str, str, str], None] = None,
-               *args,
-               **kwargs):
+    def __init__(self,
+                 output_folder_location: str = None,
+                 connection_string: str = None,
+                 table_name: str = None,
+                 notify_on_completion: Callable[[str, str, str], None] = None,
+                 *args,
+                 **kwargs):
         self.notify_on_completion = notify_on_completion
         if output_folder_location is None:
             raise ValueError("output_folder_location is empty")
@@ -53,3 +52,13 @@ class FullLoadBase(Base):
         This is the main method to derive when implementing an operator.
         """
         raise NotImplementedError()
+
+    @classmethod
+    def get_object(cls, plugin_name: str):
+        return next((sub_class for sub_class in FullLoadBase.__subclasses__()
+                     if sub_class.plugin_type == PlugInType.Full_Load
+                     and sub_class.plugin_name == plugin_name), None)
+
+    @classmethod
+    def load_derived_classes(cls):
+        from siirto.plugins.full_load.pg_default_full_load_plugin import PgDefaultFullLoadPlugin

@@ -1,5 +1,7 @@
 from siirto.configuration import configuration
 from siirto.database_operators.base_database_operator import BaseDataBaseOperator
+from siirto.plugins.full_load.full_load_base import FullLoadBase
+from siirto.plugins.cdc.cdc_base import CDCBase
 from siirto.shared.enums import DatabaseOperatorType, LoadType
 
 
@@ -16,12 +18,24 @@ def initialize():
     full_load_plugin_name = configuration.get("conf", "full_load_plugin_name")
     cdc_plugin_name = configuration.get("conf", "cdc_plugin_name")
     table_names_str = configuration.get("conf", "table_names", default="")
-    table_names = table_names_str.split(",")
+    table_names = table_names_str.split(",") if table_names_str.strip() != "" else []
     output_location = configuration.get("conf", "output_location")
 
-    database_operator = next((sub_class for sub_class in BaseDataBaseOperator.__subclasses__()
-                              if sub_class.operator_type == DatabaseOperatorType[database_operator_type]
-                              and sub_class.operator_name == database_operator_name), None)
+    BaseDataBaseOperator.load_derived_classes()
+    FullLoadBase.load_derived_classes()
+    CDCBase.load_derived_classes()
+
+    print(database_operator_name,
+          database_operator_type,
+          connection_string,
+          load_type,
+          full_load_plugin_name,
+          cdc_plugin_name,
+          table_names_str,
+          table_names,
+          output_location)
+
+    database_operator = BaseDataBaseOperator.get_object(database_operator_type, database_operator_name)
 
     database_operator_params = {
         "connection_string": connection_string,

@@ -2,24 +2,25 @@ import glob
 import json
 import os
 import time
+
 import psycopg2
 
-from siirto.plugins.full_load.full_load_base import FullLoadBase
+from siirto.plugins.cdc.cdc_base import CDCBase
 from siirto.shared.enums import PlugInType
 
 
-class PgDefaultCDCPlugin(FullLoadBase):
+class PgDefaultCDCPlugin(CDCBase):
     """
     Postgres CDC default plugin.
     """
 
     # plugin type and plugin name
     plugin_type = PlugInType.CDC
-    plugin_name = "PGDefaultCDC"
+    plugin_name = "PgDefaultCDCPlugin"
 
-    def __init(self,
-               *args,
-               **kwargs) -> None:
+    def __init__(self,
+                 *args,
+                 **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
     def _set_status(self, status: str):
@@ -27,7 +28,9 @@ class PgDefaultCDCPlugin(FullLoadBase):
         Set the status of the running plugin
         :param status: status
         """
+        status = f"CDC - {status}"
         self.status = status
+        print(status)
 
     def execute(self):
         self._set_status("in progress - started")
@@ -44,13 +47,6 @@ class PgDefaultCDCPlugin(FullLoadBase):
         if not cursor_exists:
             cursor.execute(f"SELECT 'init' FROM "
                            f"pg_create_logical_replication_slot('{slot_name}', 'wal2json');")
-
-        # get the tables from postgres
-        if len(self.table_names) == 0:
-            cursor.execute("\\dt;")
-            rows = cursor.fetchall()
-            for row in rows:
-                self.table_names.append(f"{row[0]}.{row[1]}")
 
         current_table_cdc_file_name = {}
         for table_name in self.table_names:
@@ -76,6 +72,7 @@ class PgDefaultCDCPlugin(FullLoadBase):
 
         tables_string = ",".join(self.table_names)
         while self.is_running:
+            print("running cdc pull iteration")
             cursor.execute(f"SELECT lsn, data FROM  pg_logical_slot_peek_changes('{slot_name}', "
                            f"NULL, NULL, 'pretty-print', '1', "
                            f"'add-tables', '{tables_string}');")
@@ -93,7 +90,10 @@ class PgDefaultCDCPlugin(FullLoadBase):
                     if table_name:
                         if table_name in rows_collected:
                             rows_collected[table_name].append(json.dumps(change_set_entry))
+                        else:
+                            rows_collected[table_name] = [json.dumps(change_set_entry)]
 
+            print(f"Following tables has change data: {list(rows_collected.keys())}")
             # persist the WALs
             if len(rows_collected.keys()) > 0:
                 # write the data to files

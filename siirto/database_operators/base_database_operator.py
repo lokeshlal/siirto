@@ -1,6 +1,7 @@
-from siirto.shared.enums import LoadType
-from siirto.base import Base
 from typing import List
+
+from siirto.shared.enums import LoadType, DatabaseOperatorType
+from siirto.base import Base
 
 
 class BaseDataBaseOperator(Base):
@@ -75,3 +76,13 @@ class BaseDataBaseOperator(Base):
         This is the main method to derive when implementing an operator.
         """
         raise NotImplementedError()
+
+    @classmethod
+    def get_object(cls, database_operator_type: str, database_operator_name: str):
+        return next((sub_class for sub_class in BaseDataBaseOperator.__subclasses__()
+                     if sub_class.operator_type == DatabaseOperatorType[database_operator_type]
+                     and sub_class.operator_name == database_operator_name), None)
+
+    @classmethod
+    def load_derived_classes(cls):
+        from siirto.database_operators.postgres_operator import PostgresOperator

@@ -2,9 +2,11 @@ import psycopg2
 import os
 from typing import Dict
 import multiprocessing
+import importlib
 
 from siirto.database_operators.base_database_operator import BaseDataBaseOperator
 from siirto.plugins.cdc.cdc_base import CDCBase
+from siirto.plugins.full_load.full_load_base import FullLoadBase
 from siirto.shared.enums import DatabaseOperatorType, PlugInType, LoadType
 
 
@@ -18,29 +20,26 @@ class PostgresOperator(BaseDataBaseOperator):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.full_load_plugin = next((sub_class for sub_class in CDCBase.__subclasses__()
-                                      if sub_class.plugin_type == PlugInType.Full_Load
-                                      and sub_class.plugin_name == self.full_load_plugin_name), None)
-        self.cdc_plugin = next((sub_class for sub_class in CDCBase.__subclasses__()
-                                if sub_class.plugin_type == PlugInType.Full_Load
-                                and sub_class.plugin_name == self.cdc_plugin_name), None)
-
+        self.full_load_plugin = FullLoadBase.get_object(self.full_load_plugin_name)
+        self.cdc_plugin = CDCBase.get_object(self.cdc_plugin_name)
         self._validate_input_parameters()
 
     def _validate_input_parameters(self):
-        if self.full_load_plugin is None:
-            if self.load_type in [LoadType.Full_Load, LoadType.Full_Load_And_CDC]:
-                raise ValueError(f"Incorrect value "
-                                 f"provided for {self.full_load_plugin_name}")
-        if self.cdc_plugin is None:
-            if self.load_type in [LoadType.CDC, LoadType.Full_Load_And_CDC]:
-                raise ValueError(f"Incorrect value "
-                                 f"provided for {self.cdc_plugin_name}")
+        if self.cdc_plugin is None \
+                and self.load_type in [LoadType.CDC, LoadType.Full_Load_And_CDC]:
+            raise ValueError(f"Incorrect value "
+                             f"provided for cdc plugin `{self.cdc_plugin_name}`")
+        if self.full_load_plugin is None \
+                and self.load_type in [LoadType.Full_Load, LoadType.Full_Load_And_CDC]:
+            raise ValueError(f"Incorrect value "
+                             f"provided for full load plugin `{self.full_load_plugin_name}`")
 
     @staticmethod
-    def on_full_load_completed(status: str, table_name: str):
+    def on_full_load_completed(status: str, table_name: str, error: str = None):
         if status == "success":
             print(f"Full load completed for {table_name}")
+        else:
+            print(f"Full load failed for {table_name} with error {error}")
 
     def execute(self):
 
@@ -49,19 +48,12 @@ class PostgresOperator(BaseDataBaseOperator):
         # start full load
         # cdc for each table will run in new process
         if self.load_type in [LoadType.Full_Load, LoadType.Full_Load_And_CDC]:
-            if len(self.table_names) == 0:
-                connection = psycopg2.connect(self.connection_string)
-                connection.autocommit = True
-                cursor = connection.cursor()
-                cursor.execute("\\dt;")
-                rows = cursor.fetchall()
-                for row in rows:
-                    self.table_names.append(f"{row[0]}.{row[1]}")
-
             for table_name in self.table_names:
-
-                output_location_of_table = os.path.join(self.output_location,
-                                                        "full_load",
+                full_load_output_location_of_table = os.path.join(self.output_location,
+                                                                  "full_load")
+                if not os.path.exists(full_load_output_location_of_table):
+                    os.mkdir(full_load_output_location_of_table)
+                output_location_of_table = os.path.join(full_load_output_location_of_table,
                                                         table_name.replace(".", "_"))
                 if not os.path.exists(output_location_of_table):
                     os.mkdir(output_location_of_table)
@@ -72,11 +64,9 @@ class PostgresOperator(BaseDataBaseOperator):
                     "table_name": table_name,
                     "notify_on_completion": PostgresOperator.on_full_load_completed
                 }
-
-                full_load_object = self.full_load_plugin(**full_load_init_params)
                 full_load_process = multiprocessing.Process(
-                    target=PostgresOperator._run_cdc_process_for_table,
-                    args=(self.full_load_plugin_name, full_load_object))
+                    target=PostgresOperator._run_full_load_process_for_table,
+                    args=(self.full_load_plugin_name, full_load_init_params))
                 full_load_jobs.append(full_load_process)
                 full_load_process.start()
 
@@ -85,6 +75,10 @@ class PostgresOperator(BaseDataBaseOperator):
         if self.load_type in [LoadType.CDC, LoadType.Full_Load_And_CDC]:
             output_location_for_cdc = os.path.join(self.output_location,
                                                    "cdc")
+            if not os.path.exists(self.output_location):
+                os.mkdir(self.output_location)
+            if not os.path.exists(output_location_for_cdc):
+                os.mkdir(output_location_for_cdc)
             cdc_init_params = {
                 "output_folder_location": output_location_for_cdc,
                 "connection_string": self.connection_string,
@@ -98,7 +92,7 @@ class PostgresOperator(BaseDataBaseOperator):
             full_load_job.join()
 
     @staticmethod
-    def _run_cdc_process_for_table(full_load_plugin_name: str, full_load_init_params: Dict) -> None:
+    def _run_full_load_process_for_table(full_load_plugin_name: str, full_load_init_params: Dict) -> None:
         """
         Worker process for Full load process to complete
         :param full_load_plugin_name: plugin to be used
@@ -106,9 +100,6 @@ class PostgresOperator(BaseDataBaseOperator):
         :param full_load_init_params:
         :type full_load_init_params:
         """
-        full_load_plugin = next((sub_class for sub_class in CDCBase.__subclasses__()
-                                 if sub_class.plugin_type == PlugInType.Full_Load
-                                 and sub_class.plugin_name == full_load_plugin_name), None)
-
+        full_load_plugin = FullLoadBase.get_object(full_load_plugin_name)
         full_load_object = full_load_plugin(**full_load_init_params)
         full_load_object.execute()
