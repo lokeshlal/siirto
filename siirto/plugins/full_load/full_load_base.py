@@ -37,11 +37,15 @@ class FullLoadBase(Base):
                  *args,
                  **kwargs):
         self.notify_on_completion = notify_on_completion
-        if output_folder_location is None:
+        if output_folder_location is None \
+                or len(output_folder_location.strip()) == 0:
             raise ValueError("output_folder_location is empty")
-        if connection_string is None:
+        if connection_string is None \
+                or len(connection_string.strip()) == 0:
             raise ValueError("Connection string is None")
-        if table_name is None:
+        if table_name is None \
+                or len(table_name.strip()) == 0:
+            print(table_name)
             raise ValueError("Table name is None")
         self.output_folder_location = output_folder_location
         self.status = "not started"

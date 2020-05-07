@@ -8,12 +8,12 @@ class TestBaseDataBaseOperator(BaseTest):
     def test_base_database_operator_empty_table(self):
         with self.assertRaises(ValueError) as cm:
             b = BaseDataBaseOperator(
-                "connection_string",
+                self.postgres_connection_string,
                 LoadType.Full_Load_And_CDC,
                 [],
                 "full_load_plugin_name",
                 "cdc_plugin_name",
-                "output_location"
+                self.output_folder
             )
         self.assertEqual(str(cm.exception), "Table names `[]` should not be empty")
 
@@ -22,19 +22,19 @@ class TestBaseDataBaseOperator(BaseTest):
             b = BaseDataBaseOperator(
                 "",
                 LoadType.Full_Load_And_CDC,
-                ["a"],
+                ["table.employee"],
                 "full_load_plugin_name",
                 "cdc_plugin_name",
-                "output_location"
+                self.output_folder
             )
         self.assertEqual(str(cm.exception), "Empty value provided for connection string")
 
     def test_base_database_operator_empty_output(self):
         with self.assertRaises(ValueError) as cm:
             b = BaseDataBaseOperator(
-                "connection_string",
+                self.postgres_connection_string,
                 LoadType.Full_Load_And_CDC,
-                [],
+                ["public.employee"],
                 "full_load_plugin_name",
                 "cdc_plugin_name",
                 ""
@@ -44,24 +44,24 @@ class TestBaseDataBaseOperator(BaseTest):
     def test_base_database_operator_empty_load_type(self):
         with self.assertRaises(ValueError) as cm:
             b = BaseDataBaseOperator(
-                "connection_string",
+                self.postgres_connection_string,
                 None,
-                [],
+                ["public.employee"],
                 "full_load_plugin_name",
                 "cdc_plugin_name",
-                "output_location"
+                self.output_folder
             )
         self.assertEqual(str(cm.exception), "Incorrect value provided for load type None")
 
     def test_base_database_operator_execute(self):
         with self.assertRaises(NotImplementedError) as cm:
             b = BaseDataBaseOperator(
-                "connection_string",
+                self.postgres_connection_string,
                 LoadType.Full_Load_And_CDC,
-                ["table"],
+                ["public.employee"],
                 "full_load_plugin_name",
                 "cdc_plugin_name",
-                "output_location"
+                self.output_folder
             )
             b.execute()
 

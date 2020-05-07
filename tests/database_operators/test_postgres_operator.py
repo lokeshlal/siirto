@@ -21,24 +21,24 @@ class TestPostgresOperator(BaseTest):
 
     def test_postgres_operator_operator_init(self):
         database_operator_params = {
-            "connection_string": "connection_string",
+            "connection_string": self.postgres_connection_string,
             "load_type": LoadType.Full_Load_And_CDC,
-            "table_names": ['public.employees'],
+            "table_names": ['public.employee'],
             "full_load_plugin_name": "PgDefaultFullLoadPlugin",
             "cdc_plugin_name": "PgDefaultCDCPlugin",
-            "output_location": "/mnt/d/delete_me",
+            "output_location": self.output_folder,
         }
         b = PostgresOperator(**database_operator_params)
 
     def test_postgres_operator_operator_init_fail_full_load(self):
         with self.assertRaises(ValueError) as cm:
             database_operator_params = {
-                "connection_string": "connection_string",
+                "connection_string": self.postgres_connection_string,
                 "load_type": LoadType.Full_Load_And_CDC,
                 "table_names": ['public.employees'],
                 "full_load_plugin_name": "PgDefaultFullLoadPlugin_InCorrect",
                 "cdc_plugin_name": "PgDefaultCDCPlugin",
-                "output_location": "/mnt/d/delete_me",
+                "output_location": self.output_folder,
             }
             b = PostgresOperator(**database_operator_params)
         self.assertEqual(str(cm.exception), "Incorrect value provided for "
@@ -53,7 +53,7 @@ class TestPostgresOperator(BaseTest):
                 "table_names": ['public.employee'],
                 "full_load_plugin_name": "PgDefaultFullLoadPlugin",
                 "cdc_plugin_name": "PgDefaultCDCPlugin_InCorrect",
-                "output_location": "/mnt/d/delete_me",
+                "output_location": self.output_folder,
             }
             b = PostgresOperator(**database_operator_params)
         self.assertEqual(str(cm.exception), "Incorrect value provided for "
@@ -69,14 +69,13 @@ class TestPostgresOperator(BaseTest):
     def test_postgres_operator_operator_run_test(self):
         # build the connection string
         self.insert_ref_data()
-        output_folder = os.environ["output_folder_path"]
         database_operator_params = {
             "connection_string": self.postgres_connection_string,
             "load_type": LoadType.Full_Load_And_CDC,
             "table_names": ['public.employee'],
             "full_load_plugin_name": "PgDefaultFullLoadPlugin",
             "cdc_plugin_name": "PgDefaultCDCPlugin",
-            "output_location": output_folder,
+            "output_location": self.output_folder,
         }
         b = PostgresOperator(**database_operator_params)
 
@@ -96,11 +95,11 @@ class TestPostgresOperator(BaseTest):
         threading.Thread(target=insert_ref_cdc_data,
                          args=(self.postgres_connection_string,)).start()
         b.execute()
-        full_load_output_path = os.path.join(output_folder,
+        full_load_output_path = os.path.join(self.output_folder,
                                              "full_load",
                                              "public_employee",
                                              "x00_public.employee.csv")
-        cdc_output_path = os.path.join(output_folder,
+        cdc_output_path = os.path.join(self.output_folder,
                                        "cdc",
                                        "public_employee",
                                        "public.employee_cdc_1.csv")
@@ -117,14 +116,13 @@ class TestPostgresOperator(BaseTest):
     def test_postgres_operator_operator_run_test_full_load_only(self):
         # build the connection string
         self.insert_ref_data()
-        output_folder = os.environ["output_folder_path"]
         database_operator_params = {
             "connection_string": self.postgres_connection_string,
             "load_type": LoadType.Full_Load,
             "table_names": ['public.employee'],
             "full_load_plugin_name": "PgDefaultFullLoadPlugin",
             "cdc_plugin_name": None,
-            "output_location": output_folder,
+            "output_location": self.output_folder,
         }
         b = PostgresOperator(**database_operator_params)
 
@@ -144,11 +142,11 @@ class TestPostgresOperator(BaseTest):
         threading.Thread(target=insert_ref_cdc_data,
                          args=(self.postgres_connection_string,)).start()
         b.execute()
-        full_load_output_path = os.path.join(output_folder,
+        full_load_output_path = os.path.join(self.output_folder,
                                              "full_load",
                                              "public_employee",
                                              "x00_public.employee.csv")
-        cdc_output_path = os.path.join(output_folder, "cdc")
+        cdc_output_path = os.path.join(self.output_folder, "cdc")
         with open(full_load_output_path, 'r') as full_load_file:
             full_load_output_content = full_load_file.read()
         self.assertEqual(full_load_output_content, "1\tUser1\n2\tUser2\n")
@@ -158,14 +156,13 @@ class TestPostgresOperator(BaseTest):
     def test_postgres_operator_operator_run_test_cdc_only(self):
         # build the connection string
         self.insert_ref_data()
-        output_folder = os.environ["output_folder_path"]
         database_operator_params = {
             "connection_string": self.postgres_connection_string,
             "load_type": LoadType.CDC,
             "table_names": ['public.employee'],
             "full_load_plugin_name": None,
             "cdc_plugin_name": "PgDefaultCDCPlugin",
-            "output_location": output_folder,
+            "output_location": self.output_folder,
         }
         b = PostgresOperator(**database_operator_params)
 
@@ -190,21 +187,21 @@ class TestPostgresOperator(BaseTest):
         threading.Thread(target=insert_ref_cdc_data,
                          args=(self.postgres_connection_string,)).start()
         b.execute()
-        full_load_output_path = os.path.join(output_folder,
+        full_load_output_path = os.path.join(self.output_folder,
                                              "full_load")
 
-        cdc_output_folder = os.path.join(output_folder,
+        cdc_output_folder = os.path.join(self.output_folder,
                                          "cdc",
                                          "public_employee")
         file_indexes = [int(file_name.replace(f"public.employee_cdc_", "").replace(".csv", ""))
                         for file_name in list(os.listdir(cdc_output_folder))
                         if re.search("^public.employee_cdc_.*.csv$", file_name)]
         file_index = max(file_indexes)
-        cdc_output_path_1 = os.path.join(output_folder,
+        cdc_output_path_1 = os.path.join(self.output_folder,
                                          "cdc",
                                          "public_employee",
                                          f"public.employee_cdc_{file_index - 1}.csv")
-        cdc_output_path_2 = os.path.join(output_folder,
+        cdc_output_path_2 = os.path.join(self.output_folder,
                                          "cdc",
                                          "public_employee",
                                          f"public.employee_cdc_{file_index}.csv")
@@ -232,14 +229,13 @@ class TestPostgresOperator(BaseTest):
         # build the connection string
         self.insert_ref_data()
         result_queue = []
-        output_folder = os.environ["output_folder_path"]
         database_operator_params = {
             "connection_string": self.postgres_connection_string,
             "load_type": LoadType.Full_Load_And_CDC,
             "table_names": ['public.employee'],
             "full_load_plugin_name": "PgDefaultFullLoadPlugin",
             "cdc_plugin_name": "PgDefaultCDCPlugin",
-            "output_location": output_folder,
+            "output_location": self.output_folder,
         }
         b = PostgresOperator(**database_operator_params)
 

@@ -36,9 +36,11 @@ class CDCBase(Base):
                  table_names: List[str] = [],
                  *args,
                  **kwargs) -> None:
-        if output_folder_location is None:
+        if output_folder_location is None \
+                or len(output_folder_location.strip()) == 0:
             raise ValueError("output_folder_location is empty")
-        if connection_string is None:
+        if connection_string is None \
+                or len(connection_string.strip()) == 0:
             raise ValueError("Connection string is None")
         if table_names is None \
                 or not isinstance(table_names, list):

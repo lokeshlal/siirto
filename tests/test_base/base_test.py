@@ -22,9 +22,9 @@ def tearDownModule(self):
 class BaseTest(unittest.TestCase):
 
     def setUp(self) -> None:
-        output_folder = os.environ["output_folder_path"]
-        if not os.path.exists(output_folder):
-            os.mkdir(output_folder)
+        self.output_folder = os.environ["output_folder_path"]
+        if not os.path.exists(self.output_folder):
+            os.mkdir(self.output_folder)
 
     def tearDown(self) -> None:
         output_folder = os.environ["output_folder_path"]

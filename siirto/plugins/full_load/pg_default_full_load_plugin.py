@@ -35,9 +35,10 @@ class PgDefaultFullLoadPlugin(FullLoadBase):
         with open(file_to_write, "w") as output_file:
             cursor.copy_to(output_file, self.table_name)
         self._set_status("in progress - bulk file created")
-        if not os.path.exists(self.output_folder_location):
+        if os.stat(file_to_write).st_size == 0:
             print(f"Table {self.table_name} is empty")
             self._set_status("completed")
+            self.rename_file(file_to_write)
             if self.notify_on_completion is not None:
                 self.notify_on_completion(
                     **{
@@ -46,16 +47,14 @@ class PgDefaultFullLoadPlugin(FullLoadBase):
                         'error': "Table was empty"
                     }
                 )
+            return
 
         split_command = f'cd {self.output_folder_location} && split ' \
                         f'-dl 1000000 {file_to_write} --a _{self.table_name}.csv'
+        print(split_command)
         os.system(split_command)
         self._set_status("in progress - smaller files created")
-        if len(os.listdir(self.output_folder_location)) == 1:
-            new_file_name = os.path.join(self.output_folder_location, f"x00__{self.table_name}.csv")
-            os.rename(file_to_write, new_file_name)
-        else:
-            os.remove(file_to_write)
+        self.rename_file(file_to_write)
         self._set_status("completed")
         if self.notify_on_completion is not None:
             self.notify_on_completion(
@@ -65,3 +64,10 @@ class PgDefaultFullLoadPlugin(FullLoadBase):
                     'error': None
                 }
             )
+
+    def rename_file(self, file_to_write):
+        if len(os.listdir(self.output_folder_location)) == 1:
+            new_file_name = os.path.join(self.output_folder_location, f"x00_{self.table_name}.csv")
+            os.rename(file_to_write, new_file_name)
+        else:
+            os.remove(file_to_write)
