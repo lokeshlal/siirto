@@ -13,7 +13,7 @@ postgres = testing.postgresql.PostgresqlFactory(cache_initialized_db=True)
 
 
 # noinspection PyPep8Naming
-def tearDownModule(self):
+def tearDownModule():
     # clear cached database at end of tests
     postgres.clear_cache()
 
