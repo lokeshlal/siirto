@@ -6,14 +6,14 @@ RUN yum update -y && yum install sudo -y && yum install yum-utils -y \
 
 WORKDIR /app
 
-COPY minioexport ./minioexport
+COPY siirto ./siirto
 COPY dockerfile .
 COPY setup.py .
-COPY start_minio_to_nfs.sh .
+COPY start_siirto.sh .
 
 RUN pip3 install wheel
 RUN python3.6 setup.py bdist_wheel
 RUN pip3 install dist/*
 
-RUN ["chmod", "+x", "./start_minio_to_nfs.sh"]
-ENTRYPOINT ["/bin/bash", "-c", "./start_minio_to_nfs.sh \"$@\"", "--"]
+RUN ["chmod", "+x", "./start_siirto.sh"]
+ENTRYPOINT ["/bin/bash", "-c", "./start_siirto.sh \"$@\"", "--"]
