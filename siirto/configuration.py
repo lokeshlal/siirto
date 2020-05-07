@@ -65,5 +65,16 @@ class SiirtoConfiguration:
         """
         self.configuration_parser.set(section, key, value)
 
+    def get_user_defined(self, key, default=None):
+        """
+        Get the value from configuration object from `user_defined section`
+        :param key: key
+        :type key: str
+        :param default: default value, if section->key not found
+        :type default: Any
+        :return: "user_defined" sectioin -> key value from config file
+        """
+        return self.get("user_defined", key, default)
+
 
 configuration = SiirtoConfiguration(os.environ.get("SIIRTO_CONFIG"))
