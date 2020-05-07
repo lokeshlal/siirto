@@ -19,9 +19,11 @@ class PgDefaultFullLoadPlugin(FullLoadBase):
     # plugin type and plugin name
     plugin_type = PlugInType.Full_Load
     plugin_name = "PgDefaultFullLoadPlugin"
-    plugin_parameters = [
-        "split_file_size_limit"
-    ]
+    plugin_parameters = {
+        "split_file_size_limit": {
+            "type": int
+        }
+    }
 
     def __init__(self,
                  split_file_size_limit: int = 1000000,

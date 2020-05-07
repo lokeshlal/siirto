@@ -22,9 +22,11 @@ class PgDefaultCDCPlugin(CDCBase):
     # plugin type and plugin name
     plugin_type = PlugInType.CDC
     plugin_name = "PgDefaultCDCPlugin"
-    plugin_parameters = [
-        "poll_frequency"
-    ]
+    plugin_parameters = {
+        "poll_frequency": {
+            "type": int
+        }
+    }
 
     def __init__(self,
                  poll_frequency: int = 1,

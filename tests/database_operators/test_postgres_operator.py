@@ -6,6 +6,7 @@ import re
 import subprocess
 from typing import List
 
+from siirto.configuration import configuration
 from siirto.shared.enums import LoadType, DatabaseOperatorType
 from tests.test_base.base_test import BaseTest
 from siirto.database_operators.postgres_operator import PostgresOperator
@@ -263,4 +264,56 @@ class TestPostgresOperator(BaseTest):
         result_queue.append(num_of_process)
         self.assertEqual(len(result_queue), 3)
         self.assertEqual(result_queue[0], result_queue[2])
-        self.assertEqual(result_queue[1], result_queue[2] + 3)
+        self.assertGreater(result_queue[1], result_queue[2])
+
+    def test_postgres_operator_operator_run_test_full_load_only_split_1(self):
+
+        split_file_original_value \
+            = configuration.get("plugin_parameter", "split_file_size_limit")
+        configuration.set("plugin_parameter", "split_file_size_limit", "1")
+        self.insert_ref_data()
+        database_operator_params = {
+            "connection_string": self.postgres_connection_string,
+            "load_type": LoadType.Full_Load,
+            "table_names": ['public.employee'],
+            "full_load_plugin_name": "PgDefaultFullLoadPlugin",
+            "cdc_plugin_name": None,
+            "output_location": self.output_folder,
+        }
+        b = PostgresOperator(**database_operator_params)
+
+        # start a thread to terminate the process
+        def thread_to_terminate_processes(postgres_operator_object: PostgresOperator):
+            time.sleep(5)
+            postgres_operator_object.terminate_process_signal = True
+
+        def insert_ref_cdc_data(connection_string: str):
+            time.sleep(1)
+            with psycopg2.connect(connection_string) as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute("INSERT INTO employee VALUES (3, 'User3')")
+
+        threading.Thread(target=thread_to_terminate_processes,
+                         args=(b,)).start()
+        threading.Thread(target=insert_ref_cdc_data,
+                         args=(self.postgres_connection_string,)).start()
+        b.execute()
+        full_load_output_path_0 = os.path.join(self.output_folder,
+                                             "full_load",
+                                             "public_employee",
+                                             "x00_public.employee.csv")
+        full_load_output_path_1 = os.path.join(self.output_folder,
+                                             "full_load",
+                                             "public_employee",
+                                             "x01_public.employee.csv")
+
+        cdc_output_path = os.path.join(self.output_folder, "cdc")
+        with open(full_load_output_path_0, 'r') as full_load_file:
+            full_load_output_content_0 = full_load_file.read()
+        with open(full_load_output_path_1, 'r') as full_load_file:
+            full_load_output_content_1 = full_load_file.read()
+        self.assertEqual(full_load_output_content_0, "1\tUser1\n")
+        self.assertEqual(full_load_output_content_1, "2\tUser2\n")
+        if os.path.exists(cdc_output_path):
+            self.assertFalse("CDC output created for Full Load only job")
+        configuration.set("plugin_parameter", "split_file_size_limit", split_file_original_value)

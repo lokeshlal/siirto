@@ -83,3 +83,40 @@ class TestPgDefaultFullLoadPlugin(BaseTest):
         self.assertEqual(full_load_output_content, "")
         self.assertEqual(len(notification_result_queue), 1)
         self.assertEqual(notification_result_queue[0], "success:public.employee:Table was empty")
+
+    def insert_ref_data(self):
+        with psycopg2.connect(self.postgres_connection_string) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute('DELETE FROM employee;')
+                cursor.execute("INSERT INTO employee VALUES (1, 'User1')")
+                cursor.execute("INSERT INTO employee VALUES (2, 'User2')")
+
+    def test_postgres_default_full_load_plugin_run_test_split_by_1(self):
+        self.insert_ref_data()
+        notification_result_queue = []
+
+        def notification_from_full_load(status: str, table_name: str, error: str) -> None:
+            notification_result_queue.append(f"{status}:{table_name}:{error}")
+
+        full_load_init_params = {
+            "output_folder_location": self.output_folder,
+            "connection_string": self.postgres_connection_string,
+            "table_name": "public.employee",
+            "notify_on_completion": notification_from_full_load,
+            "split_file_size_limit": 1
+        }
+        full_load_plugin_object = PgDefaultFullLoadPlugin(**full_load_init_params)
+
+        full_load_plugin_object.execute()
+        full_load_output_path_0 = os.path.join(self.output_folder,
+                                               "x00_public.employee.csv")
+        full_load_output_path_1 = os.path.join(self.output_folder,
+                                               "x01_public.employee.csv")
+        with open(full_load_output_path_0, 'r') as full_load_file:
+            full_load_output_content_0 = full_load_file.read()
+        with open(full_load_output_path_1, 'r') as full_load_file:
+            full_load_output_content_1 = full_load_file.read()
+        self.assertEqual(full_load_output_content_0, "1\tUser1\n")
+        self.assertEqual(full_load_output_content_1, "2\tUser2\n")
+        self.assertEqual(len(notification_result_queue), 1)
+        self.assertEqual(notification_result_queue[0], "success:public.employee:None")

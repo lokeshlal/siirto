@@ -50,5 +50,20 @@ class SiirtoConfiguration:
             return self.configuration_parser.get(section, key)
         return default
 
+    def set(self,
+            section: str,
+            key: str,
+            value: Any = None) -> None:
+        """
+        Set the section->key value in configuration object
+        :param section: section
+        :type section: str
+        :param key: key
+        :type key: str
+        :param value: default value, if section->key not found
+        :type value: Any
+        """
+        self.configuration_parser.set(section, key, value)
+
 
 configuration = SiirtoConfiguration(os.environ.get("SIIRTO_CONFIG"))

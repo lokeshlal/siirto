@@ -169,13 +169,10 @@ class PostgresOperator(BaseDataBaseOperator):
 
     @staticmethod
     def append_plugin_parameter_from_configuration(init_params, plugin_parameters):
-        for plugin_parameter in plugin_parameters:
+        for plugin_parameter in plugin_parameters.keys():
             plugin_parameter_value = \
                 configuration.get("plugin_parameter", plugin_parameter)
             if plugin_parameter_value:
-                init_params.extend(
-                    {
-                        plugin_parameter: plugin_parameter_value
-                    }
-                )
+                init_params[plugin_parameter] = \
+                    plugin_parameters[plugin_parameter]["type"](plugin_parameter_value)
         return init_params

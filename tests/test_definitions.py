@@ -1,6 +1,8 @@
 import os
 import testing.postgresql as tp
 
+# override the testing.postgresql to include
+# wal_level=logical while starting the postgresql
 tp.Postgresql.DEFAULT_SETTINGS = dict(auto_start=2,
                                       base_dir=None,
                                       initdb=None,
@@ -11,6 +13,7 @@ tp.Postgresql.DEFAULT_SETTINGS = dict(auto_start=2,
                                       pid=None,
                                       port=None,
                                       copy_data_from=None)
+
 ROOT_TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 
 configuration_file_path = os.path.join(ROOT_TEST_DIR, "..", "configuration.cfg")

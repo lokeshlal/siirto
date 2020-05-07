@@ -15,6 +15,8 @@ class TestConfiguration(BaseTest):
         self.assertEqual(configuration.get("conf", "cdc_plugin_name"), "PgDefaultCDCPlugin")
         self.assertEqual(configuration.get("conf", "table_names"), "public.employees")
         self.assertEqual(configuration.get("conf", "output_location"), "/mnt/d/delete_me")
+        configuration.set("conf", "new_configuration_param", "new value")
+        self.assertEqual(configuration.get("conf", "new_configuration_param"), "new value")
 
     def test_configuration_failed(self):
         self.assertEqual(configuration.get("conf", "non_existing_keys"), None)
