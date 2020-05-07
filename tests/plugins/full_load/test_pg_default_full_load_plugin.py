@@ -77,8 +77,6 @@ class TestPgDefaultFullLoadPlugin(BaseTest):
         full_load_plugin_object.execute()
         full_load_output_path = os.path.join(self.output_folder,
                                              "x00_public.employee.csv")
-        print(full_load_output_path)
-        print(os.listdir(self.output_folder))
         with open(full_load_output_path, 'r') as full_load_file:
             full_load_output_content = full_load_file.read()
         self.assertEqual(os.stat(full_load_output_path).st_size, 0)
