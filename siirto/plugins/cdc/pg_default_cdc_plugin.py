@@ -54,10 +54,11 @@ class PgDefaultCDCPlugin(CDCBase):
             table_name_in_folder = table_name.replace(".", "_")
             cdc_folder_for_table = os.path.join(self.output_folder_location,
                                                 table_name_in_folder)
-
-            file_indexes = [int(file_name.replace(f"{table_name}_cdc_", "").replace(".csv", ""))
-                            for file_name in list(os.listdir(cdc_folder_for_table))
-                            if re.search(f"^{table_name}_cdc_.*.csv$", file_name)]
+            file_indexes = []
+            if os.path.exists(cdc_folder_for_table):
+                file_indexes = [int(file_name.replace(f"{table_name}_cdc_", "").replace(".csv", ""))
+                                for file_name in list(os.listdir(cdc_folder_for_table))
+                                if re.search(f"^{table_name}_cdc_.*.csv$", file_name)]
 
             file_index = 1
             if len(file_indexes) > 0:

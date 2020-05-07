@@ -54,6 +54,7 @@ class BaseDataBaseOperator(Base):
         self.cdc_plugin_name = cdc_plugin_name
         self.table_names = table_names or []
         self.output_location = output_location
+        self.terminate_process_signal = None
         super().__init__(*args, **kwargs)
         self._validate_and_sanitize_input_parameters()
 

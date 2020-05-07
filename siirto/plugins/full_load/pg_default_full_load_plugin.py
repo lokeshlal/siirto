@@ -35,6 +35,18 @@ class PgDefaultFullLoadPlugin(FullLoadBase):
         with open(file_to_write, "w") as output_file:
             cursor.copy_to(output_file, self.table_name)
         self._set_status("in progress - bulk file created")
+        if not os.path.exists(self.output_folder_location):
+            print(f"Table {self.table_name} is empty")
+            self._set_status("completed")
+            if self.notify_on_completion is not None:
+                self.notify_on_completion(
+                    **{
+                        'status': 'success',
+                        'table_name': self.table_name,
+                        'error': "Table was empty"
+                    }
+                )
+
         split_command = f'cd {self.output_folder_location} && split ' \
                         f'-dl 1000000 {file_to_write} --a _{self.table_name}.csv'
         os.system(split_command)

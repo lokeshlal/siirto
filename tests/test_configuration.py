@@ -8,7 +8,7 @@ class TestConfiguration(BaseTest):
         self.assertEqual(configuration.get("conf", "database_operator"), "Postgres-Default")
         self.assertEqual(configuration.get("conf", "database_operator_type"), "Postgres")
         self.assertEqual(configuration.get("conf", "connection_string"),
-                         "host=127.0.01 dbname=repl user=ubuntu password=ubuntu")
+                         "host=127.0.0.1 dbname=repl user=ubuntu password=ubuntu")
         self.assertEqual(configuration.get("conf", "load_type"), "Full_Load_And_CDC")
         self.assertEqual(configuration.get("conf", "full_load_plugin_name"),
                          "PgDefaultFullLoadPlugin")

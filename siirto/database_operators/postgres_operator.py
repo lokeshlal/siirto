@@ -1,6 +1,7 @@
 import multiprocessing
 import os
 from typing import Dict, Any, List
+import time
 
 from siirto.database_operators.base_database_operator import BaseDataBaseOperator
 from siirto.plugins.cdc.cdc_base import CDCBase
@@ -49,11 +50,26 @@ class PostgresOperator(BaseDataBaseOperator):
 
         # start CDC
         # this will run on main thread
-        self._process_cdc()
+        cdc_process = self._process_cdc()
 
-        # always wait for CDC processes to be completed
-        for full_load_job in full_load_jobs:
-            full_load_job.join()
+        while True:
+            # sleep for 2 seconds, before next check
+            time.sleep(2)
+            processes_running = False
+            for full_load_job in full_load_jobs:
+                if full_load_job.is_alive():
+                    processes_running = True
+            if cdc_process is not None and cdc_process.is_alive():
+                processes_running = True
+            if not processes_running:
+                break
+            # if asked to terminate the process from outside
+            if self.terminate_process_signal:
+                for full_load_job in full_load_jobs:
+                    if full_load_job.is_alive():
+                        full_load_job.terminate()
+                if cdc_process is not None and cdc_process.is_alive():
+                    cdc_process.terminate()
 
     def _process_cdc(self):
         """
@@ -71,8 +87,12 @@ class PostgresOperator(BaseDataBaseOperator):
                 "connection_string": self.connection_string,
                 "table_names": self.table_names,
             }
-            cdc_object = self.cdc_plugin(**cdc_init_params)
-            cdc_object.execute()
+            cdc_process = multiprocessing.Process(
+                target=PostgresOperator._run_cdc_process,
+                args=(self.cdc_plugin_name, cdc_init_params))
+            cdc_process.start()
+            return cdc_process
+        return None
 
     def _process_full_load(self, full_load_jobs: List[Any]):
         """
@@ -105,6 +125,19 @@ class PostgresOperator(BaseDataBaseOperator):
                 full_load_jobs.append(full_load_process)
                 full_load_process.start()
         return full_load_jobs
+
+    @staticmethod
+    def _run_cdc_process(cdc_plugin_name: str, cdc_init_params: Dict) -> None:
+        """
+        Worker process for cdc process to complete
+        :param cdc_plugin_name: plugin to be used
+        :type cdc_plugin_name: str
+        :param cdc_init_params:
+        :type cdc_init_params:
+        """
+        cdc_plugin = CDCBase.get_object(cdc_plugin_name)
+        cdc_object = cdc_plugin(**cdc_init_params)
+        cdc_object.execute()
 
     @staticmethod
     def _run_full_load_process_for_table(full_load_plugin_name: str,
