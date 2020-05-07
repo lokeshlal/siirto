@@ -9,16 +9,26 @@ from siirto.shared.enums import PlugInType
 class PgDefaultFullLoadPlugin(FullLoadBase):
     """
     Postgres full load default plugin.
+
+    :param split_file_size_limit: number of lines after which a
+        new file will be created. Default is `1000000` lines.
+    :type split_file_size_limit: int
+
     """
 
     # plugin type and plugin name
     plugin_type = PlugInType.Full_Load
     plugin_name = "PgDefaultFullLoadPlugin"
+    plugin_parameters = [
+        "split_file_size_limit"
+    ]
 
     def __init__(self,
+                 split_file_size_limit: int = 1000000,
                  *args,
                  **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        self.split_file_size_limit = split_file_size_limit
 
     def _set_status(self, status):
         self.status = status
@@ -50,7 +60,8 @@ class PgDefaultFullLoadPlugin(FullLoadBase):
             return
 
         split_command = f'cd {self.output_folder_location} && split ' \
-                        f'-dl 1000000 {file_to_write} --a _{self.table_name}.csv'
+                        f'-dl {self.split_file_size_limit} {file_to_write} ' \
+                        f'--a _{self.table_name}.csv'
         print(split_command)
         os.system(split_command)
         self._set_status("in progress - smaller files created")

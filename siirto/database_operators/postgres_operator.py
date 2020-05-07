@@ -3,6 +3,7 @@ import os
 from typing import Dict, Any, List
 import time
 
+from siirto.configuration import SiirtoConfiguration, configuration
 from siirto.database_operators.base_database_operator import BaseDataBaseOperator
 from siirto.plugins.cdc.cdc_base import CDCBase
 from siirto.plugins.full_load.full_load_base import FullLoadBase
@@ -127,7 +128,8 @@ class PostgresOperator(BaseDataBaseOperator):
         return full_load_jobs
 
     @staticmethod
-    def _run_cdc_process(cdc_plugin_name: str, cdc_init_params: Dict) -> None:
+    def _run_cdc_process(cdc_plugin_name: str,
+                         cdc_init_params: Dict) -> None:
         """
         Worker process for cdc process to complete
         :param cdc_plugin_name: plugin to be used
@@ -136,6 +138,12 @@ class PostgresOperator(BaseDataBaseOperator):
         :type cdc_init_params:
         """
         cdc_plugin = CDCBase.get_object(cdc_plugin_name)
+        plugin_parameters = cdc_plugin.plugin_parameters
+        cdc_init_params = \
+            PostgresOperator.append_plugin_parameter_from_configuration(
+                cdc_init_params,
+                plugin_parameters
+            )
         cdc_object = cdc_plugin(**cdc_init_params)
         cdc_object.execute()
 
@@ -150,5 +158,24 @@ class PostgresOperator(BaseDataBaseOperator):
         :type full_load_init_params:
         """
         full_load_plugin = FullLoadBase.get_object(full_load_plugin_name)
+        plugin_parameters = full_load_plugin.plugin_parameters
+        full_load_init_params = \
+            PostgresOperator.append_plugin_parameter_from_configuration(
+                full_load_init_params,
+                plugin_parameters
+            )
         full_load_object = full_load_plugin(**full_load_init_params)
         full_load_object.execute()
+
+    @staticmethod
+    def append_plugin_parameter_from_configuration(init_params, plugin_parameters):
+        for plugin_parameter in plugin_parameters:
+            plugin_parameter_value = \
+                configuration.get("plugin_parameter", plugin_parameter)
+            if plugin_parameter_value:
+                init_params.extend(
+                    {
+                        plugin_parameter: plugin_parameter_value
+                    }
+                )
+        return init_params

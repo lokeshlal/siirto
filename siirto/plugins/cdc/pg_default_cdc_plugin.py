@@ -13,16 +13,25 @@ from siirto.shared.enums import PlugInType
 class PgDefaultCDCPlugin(CDCBase):
     """
     Postgres CDC default plugin.
+
+    :param poll_frequency: frequency at which Postresql database
+        should be polled. Default is `1` seconds.
+    :type poll_frequency: int
     """
 
     # plugin type and plugin name
     plugin_type = PlugInType.CDC
     plugin_name = "PgDefaultCDCPlugin"
+    plugin_parameters = [
+        "poll_frequency"
+    ]
 
     def __init__(self,
+                 poll_frequency: int = 1,
                  *args,
                  **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        self.poll_frequency = poll_frequency
 
     def _set_status(self, status: str):
         """
@@ -121,5 +130,5 @@ class PgDefaultCDCPlugin(CDCBase):
                                f"'{max_lsn}', NULL, 'pretty-print', '1', "
                                f"'add-tables', '{tables_string}');")
             # sleep for one second, before next pool
-            time.sleep(1)
+            time.sleep(self.poll_frequency)
         self._set_status("stopped")
