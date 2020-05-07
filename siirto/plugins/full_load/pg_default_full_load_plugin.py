@@ -48,7 +48,6 @@ class PgDefaultFullLoadPlugin(FullLoadBase):
             cursor.copy_to(output_file, self.table_name)
         self._set_status("in progress - bulk file created")
         if os.stat(file_to_write).st_size == 0:
-            print(f"Table {self.table_name} is empty")
             self._set_status("completed")
             self.rename_file(file_to_write)
             if self.notify_on_completion is not None:
@@ -64,7 +63,6 @@ class PgDefaultFullLoadPlugin(FullLoadBase):
         split_command = f'cd {self.output_folder_location} && split ' \
                         f'-dl {self.split_file_size_limit} {file_to_write} ' \
                         f'--a _{self.table_name}.csv'
-        print(split_command)
         os.system(split_command)
         self._set_status("in progress - smaller files created")
         self.rename_file(file_to_write)

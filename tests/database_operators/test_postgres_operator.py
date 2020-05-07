@@ -257,7 +257,7 @@ class TestPostgresOperator(BaseTest):
             queue.append(_num_of_process)
 
         before_start_thread = threading.Thread(target=get_process_count,
-                                               args=(result_queue, ))
+                                               args=(result_queue,))
         before_start_thread.start()
         b.execute()
         num_of_process = subprocess.check_output(["ps", "-ax", "-o", "pid="]).decode().count("\n")
@@ -299,13 +299,13 @@ class TestPostgresOperator(BaseTest):
                          args=(self.postgres_connection_string,)).start()
         b.execute()
         full_load_output_path_0 = os.path.join(self.output_folder,
-                                             "full_load",
-                                             "public_employee",
-                                             "x00_public.employee.csv")
+                                               "full_load",
+                                               "public_employee",
+                                               "x00_public.employee.csv")
         full_load_output_path_1 = os.path.join(self.output_folder,
-                                             "full_load",
-                                             "public_employee",
-                                             "x01_public.employee.csv")
+                                               "full_load",
+                                               "public_employee",
+                                               "x01_public.employee.csv")
 
         cdc_output_path = os.path.join(self.output_folder, "cdc")
         with open(full_load_output_path_0, 'r') as full_load_file:
