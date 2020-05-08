@@ -3,6 +3,7 @@ from siirto.database_operators.base_database_operator import BaseDataBaseOperato
 from siirto.plugins.full_load.full_load_base import FullLoadBase
 from siirto.plugins.cdc.cdc_base import CDCBase
 from siirto.shared.enums import DatabaseOperatorType, LoadType
+from siirto.logger import create_rotating_log
 
 
 def validate_configuration_parameters():
@@ -11,6 +12,9 @@ def validate_configuration_parameters():
 
 def initialize():
     """ Initialize the lineage settings """
+
+    # create the logger
+    create_rotating_log()
     database_operator_name = configuration.get("conf", "database_operator")
     database_operator_type = configuration.get("conf", "database_operator_type")
     connection_string = configuration.get("conf", "connection_string")

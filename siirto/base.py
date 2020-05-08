@@ -1,3 +1,5 @@
+import logging
+
 from siirto.configuration import configuration
 
 
@@ -9,3 +11,4 @@ class Base:
                  *args,
                  **kwargs):
         self.configuration = configuration
+        self.logger = logging.getLogger("Siirto")
