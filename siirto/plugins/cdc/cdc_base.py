@@ -36,22 +36,28 @@ class CDCBase(Base):
                  table_names: List[str] = [],
                  *args,
                  **kwargs) -> None:
+        super().__init__(*args, **kwargs)
         if output_folder_location is None \
                 or len(output_folder_location.strip()) == 0:
-            raise ValueError("output_folder_location is empty")
+            ex_msg = "output_folder_location is empty"
+            self.logger.error(ex_msg)
+            raise ValueError(ex_msg)
         if connection_string is None \
                 or len(connection_string.strip()) == 0:
-            raise ValueError("Connection string is None")
+            ex_msg = "Connection string is None"
+            self.logger.error(ex_msg)
+            raise ValueError(ex_msg)
         if table_names is None \
                 or not isinstance(table_names, list):
-            raise ValueError("Table name is None or Empty")
+            ex_msg = "Table name is None or Empty"
+            self.logger.error(ex_msg)
+            raise ValueError(ex_msg)
         self.output_folder_location = output_folder_location
         self.connection_string = connection_string
         self.table_names = table_names
         self.is_running = True
         self.status = "not started"
 
-        super().__init__(*args, **kwargs)
 
     def execute(self):
         """

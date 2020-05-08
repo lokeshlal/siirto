@@ -3,19 +3,11 @@ import os
 import unittest
 import psycopg2
 import testing.postgresql
+import logging
 
 from siirto.database_operators.base_database_operator import BaseDataBaseOperator
 from siirto.plugins.cdc.cdc_base import CDCBase
 from siirto.plugins.full_load.full_load_base import FullLoadBase
-
-
-postgres = testing.postgresql.PostgresqlFactory(cache_initialized_db=True)
-
-
-# noinspection PyPep8Naming
-def tearDownModule():
-    # clear cached database at end of tests
-    postgres.clear_cache()
 
 
 class BaseTest(unittest.TestCase):
@@ -32,6 +24,8 @@ class BaseTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
+        logging.disable(logging.CRITICAL)
+        cls.postgres_testing = testing.postgresql.PostgresqlFactory(cache_initialized_db=True)
         # setup postgres db
         cls.setup_postgres()
         # load all derived classes for the test setup
@@ -41,7 +35,7 @@ class BaseTest(unittest.TestCase):
 
     @classmethod
     def setup_postgres(cls):
-        cls.postgres = postgres()
+        cls.postgres = cls.postgres_testing()
         cls.postgres_connection_string = cls.postgres.url()
         cls.insert_data_in_postgres()
 
@@ -54,7 +48,9 @@ class BaseTest(unittest.TestCase):
 
     @classmethod
     def tearUpClass(cls) -> None:
+        logging.disable(logging.NOTSET)
         # remove the SIIRTO_CONFIG env variable
         os.environ["SIIRTO_CONFIG"] = None
         # shutdown postgres
         cls.postgres.stop()
+        cls.postgres_testing.clear_cache()

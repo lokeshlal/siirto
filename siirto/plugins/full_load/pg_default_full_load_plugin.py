@@ -34,9 +34,10 @@ class PgDefaultFullLoadPlugin(FullLoadBase):
 
     def _set_status(self, status):
         self.status = status
+        self.logger.info(status)
 
     def execute(self):
-        self._set_status("in progress - started")
+        self.logger.info("in progress - started")
         connection = psycopg2.connect(self.connection_string)
         cursor = connection.cursor()
         # copy_query = f"\\COPY {self.table_name} TO program 'split -dl 1000000 " \
@@ -48,7 +49,7 @@ class PgDefaultFullLoadPlugin(FullLoadBase):
             cursor.copy_to(output_file, self.table_name)
         self._set_status("in progress - bulk file created")
         if os.stat(file_to_write).st_size == 0:
-            self._set_status("completed")
+            self._set_status("completed - no records found")
             self.rename_file(file_to_write)
             if self.notify_on_completion is not None:
                 self.notify_on_completion(

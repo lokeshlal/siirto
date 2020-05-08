@@ -42,10 +42,10 @@ class PgDefaultCDCPlugin(CDCBase):
         """
         status = f"CDC - {status}"
         self.status = status
-        print(status)
+        self.logger.info(status)
 
     def execute(self):
-        self._set_status("in progress - started")
+        self.logger.info("in progress - started")
         connection = psycopg2.connect(self.connection_string)
         cursor = connection.cursor()
         slot_name = "siirto_slot"
@@ -88,7 +88,7 @@ class PgDefaultCDCPlugin(CDCBase):
 
         tables_string = ",".join(self.table_names)
         while self.is_running:
-            print("running cdc pull iteration")
+            self.logger.info("running cdc pull iteration")
             cursor.execute(f"SELECT lsn, data FROM  pg_logical_slot_peek_changes('{slot_name}', "
                            f"NULL, NULL, 'pretty-print', '1', "
                            f"'add-tables', '{tables_string}');")
@@ -109,9 +109,9 @@ class PgDefaultCDCPlugin(CDCBase):
                         else:
                             rows_collected[table_name] = [json.dumps(change_set_entry)]
 
-            print(f"Following tables has change data: {list(rows_collected.keys())}")
             # persist the WALs
             if len(rows_collected.keys()) > 0:
+                self.logger.info(f"Following tables has change data: {list(rows_collected.keys())}")
                 # write the data to files
                 for table_name in rows_collected.keys():
                     name_and_index = current_table_cdc_file_name[table_name]
@@ -133,4 +133,4 @@ class PgDefaultCDCPlugin(CDCBase):
                                f"'add-tables', '{tables_string}');")
             # sleep for one second, before next pool
             time.sleep(self.poll_frequency)
-        self._set_status("stopped")
+        self.logger.info("stopped")

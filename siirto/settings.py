@@ -31,7 +31,6 @@ def initialize():
 
     print(database_operator_name,
           database_operator_type,
-          connection_string,
           load_type,
           full_load_plugin_name,
           cdc_plugin_name,

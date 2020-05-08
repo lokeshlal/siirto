@@ -36,22 +36,28 @@ class FullLoadBase(Base):
                  notify_on_completion: Callable[[str, str, str], None] = None,
                  *args,
                  **kwargs):
+        super().__init__(*args, **kwargs)
         self.notify_on_completion = notify_on_completion
         if output_folder_location is None \
                 or len(output_folder_location.strip()) == 0:
-            raise ValueError("output_folder_location is empty")
+            ex_msg = "output_folder_location is empty"
+            self.logger.error(ex_msg)
+            raise ValueError(ex_msg)
         if connection_string is None \
                 or len(connection_string.strip()) == 0:
-            raise ValueError("Connection string is None")
+            ex_msg = "Connection string is None"
+            self.logger.error(ex_msg)
+            raise ValueError(ex_msg)
         if table_name is None \
                 or len(table_name.strip()) == 0:
             print(table_name)
-            raise ValueError("Table name is None")
+            ex_msg = "Table name is None"
+            self.logger.error(ex_msg)
+            raise ValueError(ex_msg)
         self.output_folder_location = output_folder_location
         self.status = "not started"
         self.connection_string = connection_string
         self.table_name = table_name
-        super().__init__(*args, **kwargs)
 
     def execute(self):
         """

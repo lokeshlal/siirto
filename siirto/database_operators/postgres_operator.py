@@ -1,10 +1,12 @@
 import multiprocessing
 import os
-from typing import Dict, Any, List
 import time
+from typing import Dict, Any, List
+from datetime import datetime
 
-from siirto.configuration import SiirtoConfiguration, configuration
+from siirto.configuration import configuration
 from siirto.database_operators.base_database_operator import BaseDataBaseOperator
+from siirto.logger import create_rotating_log
 from siirto.plugins.cdc.cdc_base import CDCBase
 from siirto.plugins.full_load.full_load_base import FullLoadBase
 from siirto.shared.enums import DatabaseOperatorType, LoadType
@@ -27,22 +29,26 @@ class PostgresOperator(BaseDataBaseOperator):
     def _validate_input_parameters(self):
         if self.cdc_plugin is None \
                 and self.load_type in [LoadType.CDC, LoadType.Full_Load_And_CDC]:
-            raise ValueError(f"Incorrect value "
-                             f"provided for cdc plugin `{self.cdc_plugin_name}`")
+            ex_msg = f"Incorrect value provided " \
+                     f"for cdc plugin `{self.cdc_plugin_name}`"
+            self.logger.exception(ex_msg)
+            raise ValueError(ex_msg)
         if self.full_load_plugin is None \
                 and self.load_type in [LoadType.Full_Load, LoadType.Full_Load_And_CDC]:
-            raise ValueError(f"Incorrect value "
-                             f"provided for full load plugin `{self.full_load_plugin_name}`")
+            ex_msg = f"Incorrect value provided for " \
+                     f"full load plugin `{self.full_load_plugin_name}`"
+            self.logger.exception(ex_msg)
+            raise ValueError(ex_msg)
 
-    @staticmethod
-    def on_full_load_completed(status: str, table_name: str, error: str = None):
+    # @staticmethod
+    def on_full_load_completed(self, status: str, table_name: str, error: str = None):
         if status == "success":
-            print(f"Full load completed for {table_name}")
+            self.logger.info(f"Full load completed for {table_name}")
         else:
-            print(f"Full load failed for {table_name} with error {error}")
+            self.logger.error(f"Full load failed for {table_name} with error {error}")
 
     def execute(self):
-
+        self.logger.info(f"Process started at {datetime.now()}")
         full_load_jobs = []
 
         # start full load
@@ -118,7 +124,7 @@ class PostgresOperator(BaseDataBaseOperator):
                     "output_folder_location": output_location_of_table,
                     "connection_string": self.connection_string,
                     "table_name": table_name,
-                    "notify_on_completion": PostgresOperator.on_full_load_completed
+                    "notify_on_completion": self.on_full_load_completed
                 }
                 full_load_process = multiprocessing.Process(
                     target=PostgresOperator._run_full_load_process_for_table,
@@ -137,6 +143,7 @@ class PostgresOperator(BaseDataBaseOperator):
         :param cdc_init_params:
         :type cdc_init_params:
         """
+
         cdc_plugin = CDCBase.get_object(cdc_plugin_name)
         plugin_parameters = cdc_plugin.plugin_parameters
         cdc_init_params = \
@@ -144,6 +151,7 @@ class PostgresOperator(BaseDataBaseOperator):
                 cdc_init_params,
                 plugin_parameters
             )
+        create_rotating_log("cdc", "siirto.log", "siirto")
         cdc_object = cdc_plugin(**cdc_init_params)
         cdc_object.execute()
 
@@ -164,6 +172,9 @@ class PostgresOperator(BaseDataBaseOperator):
                 full_load_init_params,
                 plugin_parameters
             )
+        create_rotating_log(f"full_load/{full_load_init_params['table_name']}",
+                            "siirto.log",
+                            "siirto")
         full_load_object = full_load_plugin(**full_load_init_params)
         full_load_object.execute()
 

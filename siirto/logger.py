@@ -18,24 +18,49 @@ def _create_path(path):
     os.mkdir(path)
 
 
-def create_rotating_log():
+def create_rotating_log(relative_path: str = "",
+                        file_name: str = "siirto.log",
+                        logger_name: str = "siirto",
+                        path: str = None):
     """
     Creates a rotating log
-    :param path: path for the logs
+
+    :param relative_path: relative path for the logger from the path
+    :type relative_path: str
+    :param file_name: file_name to be used
+    :type file_name: str
+    :param logger_name: name for the logger
+    :type logger_name: str
+    :param path: base path to be used
+    :type path: str
     """
-    logger = logging.getLogger("Siirto")
-    logger.setLevel(logging.INFO)
-    path = configuration.get("logs",
-                             "log_file_path",
-                             "/var/log/siirto")
+    logger = logging.getLogger(logger_name)
+    if not path:
+        path = configuration.get("logs",
+                                 "log_file_path",
+                                 "/var/log/siirto")
+    path = os.path.join(path, relative_path)
     _create_path(path)
-    log_file_path = os.path.join(path, "siirto.log")
+    log_file_path = os.path.join(path, file_name)
     # add a rotating handler
     handler = RotatingFileHandler(log_file_path,
-                                  maxBytes=configuration.get("logs",
-                                                             "log_file_max_bytes",
-                                                             10485760),
-                                  backupCount=configuration.get("logs",
-                                                                "log_file_backup_count",
-                                                                10))
+                                  maxBytes=int(configuration.get("logs",
+                                                                 "log_file_max_bytes",
+                                                                 "10485760")),
+                                  backupCount=int(configuration.get("logs",
+                                                                    "log_file_backup_count",
+                                                                    "10")))
+    log_formatter = configuration.get("logs",
+                                      "log_formatter",
+                                      "[%%(asctime)s] {%%(filename)s:%%(lineno)d} "
+                                      "%%(levelname)s - %%(message)s")
+    formatter = logging.Formatter(fmt=log_formatter,
+                                  datefmt='%Y-%m-%d %H:%M:%S')
+    handler.setFormatter(formatter)
     logger.addHandler(handler)
+    log_level_name = configuration.get("logs",
+                                       "log_file_log_level",
+                                       "DEBUG")
+    log_level = getattr(logging, log_level_name)
+    logging.basicConfig(level=log_level,
+                        format=log_formatter)

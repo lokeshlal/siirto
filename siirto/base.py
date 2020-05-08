@@ -11,4 +11,4 @@ class Base:
                  *args,
                  **kwargs):
         self.configuration = configuration
-        self.logger = logging.getLogger("Siirto")
+        self.logger = logging.getLogger("siirto")

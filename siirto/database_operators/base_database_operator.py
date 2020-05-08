@@ -65,16 +65,26 @@ class BaseDataBaseOperator(Base):
         input and output plugins will be validated in corresponding operator
         """
         if len(self.connection_string.strip()) == 0:
-            raise ValueError("Empty value provided for connection string")
+            ex_msg = "Empty value provided for connection string"
+            self.logger.error(ex_msg)
+            raise ValueError(ex_msg)
         if len(self.output_location.strip()) == 0:
-            raise ValueError("Empty value provided for output location")
+            ex_msg = "Empty value provided for output location"
+            self.logger.error(ex_msg)
+            raise ValueError(ex_msg)
         if (self.load_type is not None and type(self.load_type) is not LoadType) \
                 or self.load_type is None:
-            raise ValueError(f"Incorrect value provided for load type {self.load_type}")
+            ex_msg = f"Incorrect value provided for load type {self.load_type}"
+            self.logger.error(ex_msg)
+            raise ValueError(ex_msg)
         if not isinstance(self.table_names, list):
-            raise ValueError(f"Table names `{self.table_names}` should be list or None")
+            ex_msg = f"Table names `{self.table_names}` should be list or None"
+            self.logger.error(ex_msg)
+            raise ValueError(ex_msg)
         if len(self.table_names) == 0:
-            raise ValueError(f"Table names `{self.table_names}` should not be empty")
+            ex_msg = f"Table names `{self.table_names}` should not be empty"
+            self.logger.error(ex_msg)
+            raise ValueError(ex_msg)
 
     def execute(self):
         """
