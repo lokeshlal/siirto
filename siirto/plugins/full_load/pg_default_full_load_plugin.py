@@ -61,6 +61,11 @@ class PgDefaultFullLoadPlugin(FullLoadBase):
                 )
             return
 
+        count = 0
+        for line in open(file_to_write).xreadlines():
+            count += 1
+
+        self.logger.info(f"file written with records: {count}")
         split_command = f'cd {self.output_folder_location} && split ' \
                         f'-dl {self.split_file_size_limit} {file_to_write} ' \
                         f'--a _{self.table_name}.csv'
