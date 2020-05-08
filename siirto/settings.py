@@ -1,3 +1,8 @@
+import signal
+import sys
+import psutil
+import multiprocessing
+
 from siirto.configuration import configuration
 from siirto.database_operators.base_database_operator import BaseDataBaseOperator
 from siirto.plugins.full_load.full_load_base import FullLoadBase
@@ -12,6 +17,8 @@ def validate_configuration_parameters():
 
 def initialize():
     """ Initialize the lineage settings """
+    # register interrupt signal
+    register_ctrl_c_signal()
 
     # create the logger
     create_rotating_log()
@@ -50,3 +57,19 @@ def initialize():
     }
     database_operator_object = database_operator(**database_operator_params)
     database_operator_object.execute()
+
+
+def register_ctrl_c_signal() -> None:
+    """
+    capture to control the ctrl+c signal
+    run some clean up code here for graceful termination
+    """
+    def signal_handler(sig, frame):
+        print(f'Interruption detected. process name: {multiprocessing.current_process().name}')
+        siirto_processes = [p for p in psutil.process_iter() if p.name().startswith("siirto_")]
+        print([p.name() for p in siirto_processes])
+        for process in siirto_processes:
+            process.terminate()
+
+        sys.exit(0)
+    signal.signal(signal.SIGINT, signal_handler)

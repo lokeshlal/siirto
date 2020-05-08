@@ -3,6 +3,7 @@ import os
 import time
 from typing import Dict, Any, List
 from datetime import datetime
+import uuid
 
 from siirto.configuration import configuration
 from siirto.database_operators.base_database_operator import BaseDataBaseOperator
@@ -97,6 +98,7 @@ class PostgresOperator(BaseDataBaseOperator):
             cdc_process = multiprocessing.Process(
                 target=PostgresOperator._run_cdc_process,
                 args=(self.cdc_plugin_name, cdc_init_params))
+            cdc_process.name = "siirto_cdc_" + str(uuid.uuid4())
             cdc_process.start()
             return cdc_process
         return None
@@ -129,6 +131,7 @@ class PostgresOperator(BaseDataBaseOperator):
                 full_load_process = multiprocessing.Process(
                     target=PostgresOperator._run_full_load_process_for_table,
                     args=(self.full_load_plugin_name, full_load_init_params))
+                full_load_process.name = "siirto_full_load_" + str(uuid.uuid4())
                 full_load_jobs.append(full_load_process)
                 full_load_process.start()
         return full_load_jobs
