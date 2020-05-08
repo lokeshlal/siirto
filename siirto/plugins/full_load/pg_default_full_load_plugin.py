@@ -61,11 +61,9 @@ class PgDefaultFullLoadPlugin(FullLoadBase):
                 )
             return
 
-        count = 0
-        for line in open(file_to_write).xreadlines():
-            count += 1
+        line_count = PgDefaultFullLoadPlugin.file_len(file_to_write)
 
-        self.logger.info(f"file written with records: {count}")
+        self.logger.info(f"file written with records: {line_count}")
         split_command = f'cd {self.output_folder_location} && split ' \
                         f'-dl {self.split_file_size_limit} {file_to_write} ' \
                         f'--a _{self.table_name}.csv'
@@ -88,3 +86,10 @@ class PgDefaultFullLoadPlugin(FullLoadBase):
             os.rename(file_to_write, new_file_name)
         else:
             os.remove(file_to_write)
+
+    @staticmethod
+    def file_len(file_name):
+        with open(file_name) as f:
+            for i, l in enumerate(f):
+                pass
+        return i + 1

@@ -111,10 +111,11 @@ class PgDefaultCDCPlugin(CDCBase):
 
             # persist the WALs
             if len(rows_collected.keys()) > 0:
-                self.logger.info(f"Following tables has change data: {list(rows_collected.keys())}")
+                cdc_captured_details = {}
                 # write the data to files
                 for table_name in rows_collected.keys():
                     name_and_index = current_table_cdc_file_name[table_name]
+                    cdc_captured_details[table_name] = len(rows_collected[table_name])
                     with open(name_and_index["file_to_write"], "w+") as output_file:
                         output_file.write("\n".join(rows_collected[table_name]))
                         new_file_index = name_and_index['index'] + 1
@@ -125,6 +126,8 @@ class PgDefaultCDCPlugin(CDCBase):
                             'file_to_write': new_file_to_write,
                             'index': new_file_index
                         }
+
+                self.logger.info(f"Following tables has change data: {cdc_captured_details}")
 
             # remove the WALs
             if max_lsn:
