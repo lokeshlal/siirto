@@ -15,15 +15,23 @@ class SiirtoConfiguration:
 
     def __init__(self,
                  filename: str) -> None:
-        if filename is None:
+        configuration_text = None
+        if filename is None \
+                or len(filename.strip()) == 0 \
+                or not os.path.isabs(filename):
             raise SiirtoException("configuration file path is missing. "
                                   "Please set SIIRTO_CONFIG env variable.")
-        configuration_text = None
-        if os.path.exists(filename):
-            with open(filename, "r") as config_file:
-                configuration_text = config_file.read()
-        else:
-            raise SiirtoException(f"Configuration file is not present at {filename}")
+
+        if not os.path.isabs(filename):
+            # filename in this case is configuration_text
+            configuration_text = filename
+
+        if configuration_text is None:
+            if os.path.exists(filename):
+                with open(filename, "r") as config_file:
+                    configuration_text = config_file.read()
+            else:
+                raise SiirtoException(f"Configuration file is not present at {filename}")
 
         if configuration_text is not None:
             self.configuration_parser = ConfigParser()
