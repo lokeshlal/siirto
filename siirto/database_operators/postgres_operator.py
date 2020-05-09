@@ -156,6 +156,7 @@ class PostgresOperator(BaseDataBaseOperator):
             )
         create_rotating_log("cdc", "siirto.log", "siirto")
         cdc_object = cdc_plugin(**cdc_init_params)
+        cdc_object.setup_graceful_shutdown()
         cdc_object.execute()
 
     @staticmethod
@@ -179,6 +180,7 @@ class PostgresOperator(BaseDataBaseOperator):
                             "siirto.log",
                             "siirto")
         full_load_object = full_load_plugin(**full_load_init_params)
+        full_load_object.setup_graceful_shutdown()
         full_load_object.execute()
 
     @staticmethod

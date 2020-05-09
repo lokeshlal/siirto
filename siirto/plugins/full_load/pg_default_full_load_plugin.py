@@ -2,6 +2,7 @@ import os
 import psycopg2
 import shutil
 from pathlib import Path
+import signal
 
 from siirto.plugins.full_load.full_load_base import FullLoadBase
 from siirto.shared.enums import PlugInType
@@ -44,6 +45,8 @@ class PgDefaultFullLoadPlugin(FullLoadBase):
             self.logger.info("Process already completed successfully before.")
         connection = psycopg2.connect(self.connection_string)
         cursor = connection.cursor()
+        import time
+        time.sleep(50)
         # copy_query = f"\\COPY {self.table_name} TO program 'split -dl 1000000 " \
         #              f"--a _{self.table_name}.csv' (format csv)"
         shutil.rmtree(self.output_folder_location)
@@ -99,3 +102,21 @@ class PgDefaultFullLoadPlugin(FullLoadBase):
             for i, l in enumerate(f):
                 pass
         return i + 1
+
+    def setup_graceful_shutdown(self) -> None:
+        """
+        Handles the graceful shutdown of the process.
+        Cleans the slot from pg, if already created
+        :return:
+        """
+        def signal_handler(sig, frame):
+            success_file = os.path.join(self.output_folder_location, f"_success")
+            if not os.path.exists(success_file):
+                # process is still running
+                self.logger.error("Process not yet completed. It will run again.")
+                exit(0)
+
+        signal.signal(signal.SIGINT, signal_handler)
+        signal.signal(signal.SIGTERM, signal_handler)
+
+

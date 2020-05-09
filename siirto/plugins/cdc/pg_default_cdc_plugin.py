@@ -3,6 +3,8 @@ import json
 import os
 import time
 import re
+import signal
+import multiprocessing
 
 import psycopg2
 
@@ -137,6 +139,22 @@ class PgDefaultCDCPlugin(CDCBase):
             # sleep for one second, before next pool
             time.sleep(self.poll_frequency)
 
+        print(f'cleaning the {slot_name}')
         cursor.execute(f"SELECT 'stop' FROM pg_drop_replication_slot('{slot_name}');")
-
+        print(f'cleared the {slot_name}')
         self.logger.info("stopped")
+
+    def setup_graceful_shutdown(self) -> None:
+        """
+        Handles the graceful shutdown of the process.
+        Cleans the slot from pg, if already created
+        :return:
+        """
+        def signal_handler(sig, frame):
+            print("cleaning the slot")
+            self.is_running = False
+
+        signal.signal(signal.SIGINT, signal_handler)
+        signal.signal(signal.SIGTERM, signal_handler)
+
+

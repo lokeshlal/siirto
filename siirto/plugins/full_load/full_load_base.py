@@ -62,6 +62,12 @@ class FullLoadBase(Base):
         """
         raise NotImplementedError()
 
+    def setup_graceful_shutdown(self):
+        """
+        Handles graceful shutdown in case of failures
+        """
+        raise NotImplementedError()
+
     @classmethod
     def get_object(cls, plugin_name: str):
         return next((sub_class for sub_class in FullLoadBase.__subclasses__()

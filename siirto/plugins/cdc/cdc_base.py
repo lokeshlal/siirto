@@ -55,10 +55,15 @@ class CDCBase(Base):
         self.is_running = True
         self.status = "not started"
 
-
     def execute(self):
         """
         This is the main method to derive when implementing an operator.
+        """
+        raise NotImplementedError()
+
+    def setup_graceful_shutdown(self):
+        """
+        Handles graceful shutdown in case of failures
         """
         raise NotImplementedError()
 
