@@ -1,6 +1,7 @@
 import os
 import psycopg2
 import shutil
+from pathlib import Path
 
 from siirto.plugins.full_load.full_load_base import FullLoadBase
 from siirto.shared.enums import PlugInType
@@ -38,6 +39,9 @@ class PgDefaultFullLoadPlugin(FullLoadBase):
 
     def execute(self):
         self.logger.info("in progress - started")
+        success_file = os.path.join(self.output_folder_location, f"_success")
+        if os.path.exists(success_file):
+            self.logger.info("Process already completed successfully before.")
         connection = psycopg2.connect(self.connection_string)
         cursor = connection.cursor()
         # copy_query = f"\\COPY {self.table_name} TO program 'split -dl 1000000 " \
@@ -59,6 +63,7 @@ class PgDefaultFullLoadPlugin(FullLoadBase):
                         'error': "Table was empty"
                     }
                 )
+            Path(success_file).touch()
             return
 
         line_count = PgDefaultFullLoadPlugin.file_len(file_to_write)
@@ -79,6 +84,7 @@ class PgDefaultFullLoadPlugin(FullLoadBase):
                     'error': None
                 }
             )
+        Path(success_file).touch()
 
     def rename_file(self, file_to_write):
         if len(os.listdir(self.output_folder_location)) == 1:

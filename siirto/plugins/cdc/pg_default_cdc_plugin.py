@@ -24,7 +24,7 @@ class PgDefaultCDCPlugin(CDCBase):
     plugin_name = "PgDefaultCDCPlugin"
     plugin_parameters = {
         "poll_frequency": {
-            "type": int
+            "type": float
         }
     }
 
@@ -136,4 +136,7 @@ class PgDefaultCDCPlugin(CDCBase):
                                f"'add-tables', '{tables_string}');")
             # sleep for one second, before next pool
             time.sleep(self.poll_frequency)
+
+        cursor.execute(f"SELECT 'stop' FROM pg_drop_replication_slot('{slot_name}');")
+
         self.logger.info("stopped")

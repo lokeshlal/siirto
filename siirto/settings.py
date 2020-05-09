@@ -67,6 +67,16 @@ def initialize():
 def run_database_operator(database_operator: BaseDataBaseOperator,
                           database_operator_params: Dict,
                           retry_times: int) -> None:
+    """
+    run the actual database operator along with the configuration
+    :param database_operator: database operator class
+    :type database_operator: BaseDataBaseOperator
+    :param database_operator_params: constructor params for the
+        database parameters
+    :type database_operator_params: Dict
+    :param retry_times: number of time code should retry
+    :type retry_times: int
+    """
     logger = logging.getLogger("siirto")
     try:
         database_operator_object = database_operator(**database_operator_params)
