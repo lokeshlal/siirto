@@ -41,18 +41,15 @@ class FullLoadBase(Base):
         if output_folder_location is None \
                 or len(output_folder_location.strip()) == 0:
             ex_msg = "output_folder_location is empty"
-            self.logger.error(ex_msg)
             raise ValueError(ex_msg)
         if connection_string is None \
                 or len(connection_string.strip()) == 0:
             ex_msg = "Connection string is None"
-            self.logger.error(ex_msg)
             raise ValueError(ex_msg)
         if table_name is None \
                 or len(table_name.strip()) == 0:
             print(table_name)
             ex_msg = "Table name is None"
-            self.logger.error(ex_msg)
             raise ValueError(ex_msg)
         self.output_folder_location = output_folder_location
         self.status = "not started"

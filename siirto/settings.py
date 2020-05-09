@@ -2,6 +2,8 @@ import signal
 import sys
 import psutil
 import multiprocessing
+from typing import Dict
+import logging
 
 from siirto.configuration import configuration
 from siirto.database_operators.base_database_operator import BaseDataBaseOperator
@@ -55,8 +57,28 @@ def initialize():
         "cdc_plugin_name": cdc_plugin_name,
         "output_location": output_location,
     }
-    database_operator_object = database_operator(**database_operator_params)
-    database_operator_object.execute()
+
+    retry_times = int(configuration.get("conf", "retry_times", 0))
+    run_database_operator(database_operator,
+                          database_operator_params,
+                          retry_times)
+
+
+def run_database_operator(database_operator: BaseDataBaseOperator,
+                          database_operator_params: Dict,
+                          retry_times: int) -> None:
+    logger = logging.getLogger("siirto")
+    try:
+        database_operator_object = database_operator(**database_operator_params)
+        database_operator_object.execute()
+    except Exception as exception:
+        logger.error(f"Error occurred: {exception}")
+        retry_times -= 1
+        if retry_times >= 0:
+            logger.error(f"{retry_times} times left. Trying one more times")
+            run_database_operator(database_operator,
+                                  database_operator_params,
+                                  retry_times)
 
 
 def register_ctrl_c_signal() -> None:

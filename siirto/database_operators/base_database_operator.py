@@ -66,24 +66,19 @@ class BaseDataBaseOperator(Base):
         """
         if len(self.connection_string.strip()) == 0:
             ex_msg = "Empty value provided for connection string"
-            self.logger.error(ex_msg)
             raise ValueError(ex_msg)
         if len(self.output_location.strip()) == 0:
             ex_msg = "Empty value provided for output location"
-            self.logger.error(ex_msg)
             raise ValueError(ex_msg)
         if (self.load_type is not None and type(self.load_type) is not LoadType) \
                 or self.load_type is None:
             ex_msg = f"Incorrect value provided for load type {self.load_type}"
-            self.logger.error(ex_msg)
             raise ValueError(ex_msg)
         if not isinstance(self.table_names, list):
             ex_msg = f"Table names `{self.table_names}` should be list or None"
-            self.logger.error(ex_msg)
             raise ValueError(ex_msg)
         if len(self.table_names) == 0:
             ex_msg = f"Table names `{self.table_names}` should not be empty"
-            self.logger.error(ex_msg)
             raise ValueError(ex_msg)
 
     def execute(self):
