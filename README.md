@@ -35,4 +35,6 @@ Configuration file is available at: ./siirto/configuration.cfg
 ##### Code documentation
 
 Code documentation is available in folder `./doc` folder
+
+To update the documentation run `python generate_doc.py`
     
