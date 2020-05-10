@@ -5,6 +5,29 @@ from siirto.database_operators.base_database_operator import BaseDataBaseOperato
 
 class TestBaseDataBaseOperator(BaseTest):
 
+    def test_base_database_operator_parameters(self):
+        b = BaseDataBaseOperator(
+            self.postgres_connection_string,
+            LoadType.Full_Load_And_CDC,
+            ["public.employee"],
+            "full_load_plugin_name",
+            "cdc_plugin_name",
+            self.output_folder
+        )
+
+        self.assertEqual(list(b.__dict__.keys()).sort(),
+                         [
+                             "connection_string",
+                             "load_type",
+                             "full_load_plugin_name",
+                             "cdc_plugin_name",
+                             "table_names",
+                             "output_location",
+                             "terminate_process_signal",
+                             "configuration",
+                             "logger"
+                         ].sort())
+
     def test_base_database_operator_empty_table(self):
         with self.assertRaises(ValueError) as cm:
             b = BaseDataBaseOperator(

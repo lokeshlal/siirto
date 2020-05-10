@@ -5,6 +5,24 @@ from tests.test_base.base_test import BaseTest
 
 class TestCDCBase(BaseTest):
 
+    def test_cdc_base_plugin_parameters(self):
+        full_load_init_params = {
+            "output_folder_location": self.output_folder,
+            "connection_string": self.postgres_connection_string,
+            "table_name": "public.employee",
+            "notify_on_completion": None
+        }
+        full_load_object = FullLoadBase(**full_load_init_params)
+        self.assertEqual(list(full_load_object.__dict__.keys()).sort(),
+                         [
+                             "connection_string",
+                             "output_folder_location",
+                             "table_name",
+                             "notify_on_completion"
+                             "configuration",
+                             "logger"
+                         ].sort())
+
     def test_full_load_base_plugin_name_and_type(self):
         self.assertEqual(FullLoadBase.plugin_name, None)
         self.assertEqual(FullLoadBase.plugin_type, PlugInType.Full_Load)

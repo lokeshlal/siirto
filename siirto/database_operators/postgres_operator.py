@@ -32,13 +32,11 @@ class PostgresOperator(BaseDataBaseOperator):
                 and self.load_type in [LoadType.CDC, LoadType.Full_Load_And_CDC]:
             ex_msg = f"Incorrect value provided " \
                      f"for cdc plugin `{self.cdc_plugin_name}`"
-            self.logger.exception(ex_msg)
             raise ValueError(ex_msg)
         if self.full_load_plugin is None \
                 and self.load_type in [LoadType.Full_Load, LoadType.Full_Load_And_CDC]:
             ex_msg = f"Incorrect value provided for " \
                      f"full load plugin `{self.full_load_plugin_name}`"
-            self.logger.exception(ex_msg)
             raise ValueError(ex_msg)
 
     # @staticmethod

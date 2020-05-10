@@ -5,6 +5,23 @@ from tests.test_base.base_test import BaseTest
 
 class TestCDCBase(BaseTest):
 
+    def test_cdc_base_plugin_parameters(self):
+        cdc_init_params = {
+            "output_folder_location": self.output_folder,
+            "connection_string": self.postgres_connection_string,
+            "table_names": ["public.employee"]
+        }
+        cdc_object = CDCBase(**cdc_init_params)
+
+        self.assertEqual(list(cdc_object.__dict__.keys()).sort(),
+                         [
+                             "connection_string",
+                             "output_folder_location",
+                             "table_names",
+                             "configuration",
+                             "logger"
+                         ].sort())
+
     def test_cdc_base_plugin_name_and_type(self):
         self.assertEqual(CDCBase.plugin_name, None)
         self.assertEqual(CDCBase.plugin_type, PlugInType.CDC)
