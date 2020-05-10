@@ -45,8 +45,6 @@ class PgDefaultFullLoadPlugin(FullLoadBase):
             self.logger.info("Process already completed successfully before.")
         connection = psycopg2.connect(self.connection_string)
         cursor = connection.cursor()
-        import time
-        time.sleep(50)
         # copy_query = f"\\COPY {self.table_name} TO program 'split -dl 1000000 " \
         #              f"--a _{self.table_name}.csv' (format csv)"
         shutil.rmtree(self.output_folder_location)

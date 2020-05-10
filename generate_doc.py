@@ -56,9 +56,6 @@ def parse_all_html():
                         list_to_be_removed.append(f"href=\"{links.get('href')}\"")
 
             link_replace_string = "href=\"#\""
-            if html_file == "siirto.base.html":
-                print("$$$$$$$$$$$$$$$")
-                print(list_to_be_removed)
             for external_links in list_to_be_removed:
                 file_content = file_content.replace(external_links, link_replace_string)
             with open(os.path.join(doc_folder_path, html_file), 'w') as file:
