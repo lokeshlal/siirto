@@ -30,6 +30,7 @@ MANIFEST
 test_data/
 test-results/
 test_output_folder/
+doc/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
