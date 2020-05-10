@@ -89,12 +89,23 @@ class BaseDataBaseOperator(Base):
 
     @classmethod
     def get_object(cls, database_operator_type: str, database_operator_name: str):
+        """
+        Factory.
+        Get the databae operator type object having name `database_operator_name`
+        :param database_operator_type: type of operator to load
+        :param database_operator_name: name of operator to load
+        :return: operator
+        """
         return next((sub_class for sub_class in BaseDataBaseOperator.__subclasses__()
                      if sub_class.operator_type == DatabaseOperatorType[database_operator_type]
                      and sub_class.operator_name == database_operator_name), None)
 
     @classmethod
     def load_derived_classes(cls):
+        """
+        load the derived operator classes available in the current directory and
+        ending with _operator.py
+        """
         current_directory_path = os.path.dirname(__file__)
         plugin_files = [file_path.replace(".py", "") for file_path in os.listdir(current_directory_path)
                         if file_path.endswith("_operator.py")]

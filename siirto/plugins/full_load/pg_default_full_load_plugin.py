@@ -57,7 +57,7 @@ class PgDefaultFullLoadPlugin(FullLoadBase):
         self._set_status("in progress - bulk file created")
         if os.stat(file_to_write).st_size == 0:
             self._set_status("completed - no records found")
-            self.rename_file(file_to_write)
+            self._rename_file(file_to_write)
             if self.notify_on_completion is not None:
                 self.notify_on_completion(
                     **{
@@ -77,7 +77,7 @@ class PgDefaultFullLoadPlugin(FullLoadBase):
                         f'--a _{self.table_name}.csv'
         os.system(split_command)
         self._set_status("in progress - smaller files created")
-        self.rename_file(file_to_write)
+        self._rename_file(file_to_write)
         self._set_status("completed")
         if self.notify_on_completion is not None:
             self.notify_on_completion(
@@ -89,7 +89,7 @@ class PgDefaultFullLoadPlugin(FullLoadBase):
             )
         Path(success_file).touch()
 
-    def rename_file(self, file_to_write):
+    def _rename_file(self, file_to_write):
         if len(os.listdir(self.output_folder_location)) == 1:
             new_file_name = os.path.join(self.output_folder_location, f"x00_{self.table_name}.csv")
             os.rename(file_to_write, new_file_name)

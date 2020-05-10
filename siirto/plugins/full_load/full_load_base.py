@@ -70,12 +70,22 @@ class FullLoadBase(Base):
 
     @classmethod
     def get_object(cls, plugin_name: str):
+        """
+        Factory.
+        Get the full load plugin object having name `plugin_name`
+        :param plugin_name: plugin name
+        :return: full load plug_in
+        """
         return next((sub_class for sub_class in FullLoadBase.__subclasses__()
                      if sub_class.plugin_type == PlugInType.Full_Load
                      and sub_class.plugin_name == plugin_name), None)
 
     @classmethod
     def load_derived_classes(cls):
+        """
+        load the derived full load plugin classes available in the current directory and
+        ending with _plugin.py
+        """
         current_directory_path = os.path.dirname(__file__)
         plugin_files = [file_path.replace(".py", "") for file_path in os.listdir(current_directory_path)
                         if file_path.endswith("_plugin.py")]

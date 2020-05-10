@@ -8,10 +8,10 @@ Migrate data from database to other sinks
 siirto
 |
 |___database_operators
-    |___(base_database_operator) BaseDataBaseOperator
-    |___(postgres_operator) PostgresOperator
-    |
-    plguins
+|   |___(base_database_operator) BaseDataBaseOperator
+|   |___(postgres_operator) PostgresOperator
+|   
+|___plguins
     |
     |___cdc
     |   |___(cdc_base) CDCBase
@@ -26,9 +26,13 @@ Database operator classes defines the functionality/flow of calling full load pl
 
 Each operator class calls the separate plugins to process. CDC plugins are suppose to run as a single process for all the tables. However, full load plugins will run one process for one table export.
 
-As of now, Postgres operator is only implemented and copies the data on NFS. However, as per requirements this can be enhanced to more to kafka or directly to other data sinks.
+As of now, Postgres operator is only implemented and copies the data on NFS. However, as per requirements this can be enhanced to move to kafka or directly to other data sinks.
 
 ##### Configuration
 
-Please look at: ./siirto/configuration.cfg  
+Configuration file is available at: ./siirto/configuration.cfg  
+
+##### Code documentation
+
+Code documentation is available in folder `./doc` folder
     

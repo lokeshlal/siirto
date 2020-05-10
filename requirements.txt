@@ -1,0 +1,4 @@
+mock
+psycopg2
+testing.postgresql
+beautifulsoup4

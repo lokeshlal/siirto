@@ -13,7 +13,7 @@ from siirto.shared.enums import DatabaseOperatorType, LoadType
 from siirto.logger import create_rotating_log
 
 
-def validate_configuration_parameters():
+def _validate_configuration_parameters():
     pass
 
 

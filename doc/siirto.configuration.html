@@ -1,0 +1,93 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module siirto.configuration</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="siirto.html"><font color="#ffffff">siirto</font></a>.configuration</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href="#">index</a><br><a href="file:/mnt/d/github/siirto/siirto/configuration.py">/mnt/d/github/siirto/siirto/configuration.py</a></font></td></tr></table>
+    <p></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="#">os</a><br>
+</td><td width="25%" valign=top></td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="#">builtins.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="siirto.configuration.html#SiirtoConfiguration">SiirtoConfiguration</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="SiirtoConfiguration">class <strong>SiirtoConfiguration</strong></a>(<a href="#">builtins.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Siirto&nbsp;configuration&nbsp;module.<br>
+Loads&nbsp;the&nbsp;config&nbsp;file&nbsp;and&nbsp;provide&nbsp;it&nbsp;to&nbsp;various&nbsp;modules<br>
+&nbsp;<br>
+:param&nbsp;filename:&nbsp;configuration&nbsp;file&nbsp;path<br>
+:type&nbsp;filename:&nbsp;str<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="SiirtoConfiguration-__init__"><strong>__init__</strong></a>(self, filename:str) -&gt; None</dt><dd><tt>Initialize&nbsp;self.&nbsp;&nbsp;See&nbsp;help(type(self))&nbsp;for&nbsp;accurate&nbsp;signature.</tt></dd></dl>
+
+<dl><dt><a name="SiirtoConfiguration-get"><strong>get</strong></a>(self, section:str, key:str, default:Any=None)</dt><dd><tt>Get&nbsp;the&nbsp;value&nbsp;from&nbsp;configuration&nbsp;<a href="#">object</a><br>
+:param&nbsp;section:&nbsp;section<br>
+:type&nbsp;section:&nbsp;str<br>
+:param&nbsp;key:&nbsp;key<br>
+:type&nbsp;key:&nbsp;str<br>
+:param&nbsp;default:&nbsp;default&nbsp;value,&nbsp;if&nbsp;section-&gt;key&nbsp;not&nbsp;found<br>
+:type&nbsp;default:&nbsp;Any<br>
+:return:&nbsp;section&nbsp;-&gt;&nbsp;key&nbsp;value&nbsp;from&nbsp;config&nbsp;file</tt></dd></dl>
+
+<dl><dt><a name="SiirtoConfiguration-get_user_defined"><strong>get_user_defined</strong></a>(self, key, default=None)</dt><dd><tt>Get&nbsp;the&nbsp;value&nbsp;from&nbsp;configuration&nbsp;<a href="#">object</a>&nbsp;from&nbsp;`user_defined&nbsp;section`<br>
+:param&nbsp;key:&nbsp;key<br>
+:type&nbsp;key:&nbsp;str<br>
+:param&nbsp;default:&nbsp;default&nbsp;value,&nbsp;if&nbsp;section-&gt;key&nbsp;not&nbsp;found<br>
+:type&nbsp;default:&nbsp;Any<br>
+:return:&nbsp;"user_defined"&nbsp;sectioin&nbsp;-&gt;&nbsp;key&nbsp;value&nbsp;from&nbsp;config&nbsp;file</tt></dd></dl>
+
+<dl><dt><a name="SiirtoConfiguration-set"><strong>set</strong></a>(self, section:str, key:str, value:Any=None) -&gt; None</dt><dd><tt>Set&nbsp;the&nbsp;section-&gt;key&nbsp;value&nbsp;in&nbsp;configuration&nbsp;<a href="#">object</a><br>
+:param&nbsp;section:&nbsp;section<br>
+:type&nbsp;section:&nbsp;str<br>
+:param&nbsp;key:&nbsp;key<br>
+:type&nbsp;key:&nbsp;str<br>
+:param&nbsp;value:&nbsp;default&nbsp;value,&nbsp;if&nbsp;section-&gt;key&nbsp;not&nbsp;found<br>
+:type&nbsp;value:&nbsp;Any</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>Any</strong> = typing.Any<br>
+<strong>configuration</strong> = &lt;siirto.configuration.SiirtoConfiguration object&gt;</td></tr></table>
+</body></html>
