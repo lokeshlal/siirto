@@ -2,3 +2,4 @@ mock
 psycopg2
 testing.postgresql
 beautifulsoup4
+azure-eventhub==1.3.*

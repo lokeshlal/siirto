@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
@@ -35,28 +36,35 @@ def create_rotating_log(relative_path: str = "",
     :type path: str
     """
     logger = logging.getLogger(logger_name)
-    if not path:
-        path = configuration.get("logs",
-                                 "log_file_path",
-                                 "/var/log/siirto")
-    path = os.path.join(path, relative_path)
-    _create_path(path)
-    log_file_path = os.path.join(path, file_name)
-    # add a rotating handler
-    handler = RotatingFileHandler(log_file_path,
-                                  maxBytes=int(configuration.get("logs",
-                                                                 "log_file_max_bytes",
-                                                                 "10485760")),
-                                  backupCount=int(configuration.get("logs",
-                                                                    "log_file_backup_count",
-                                                                    "10")))
     log_formatter = configuration.get("logs",
                                       "log_formatter",
                                       "[%%(asctime)s] {%%(filename)s:%%(lineno)d} "
                                       "%%(levelname)s - %%(message)s")
     formatter = logging.Formatter(fmt=log_formatter,
                                   datefmt='%Y-%m-%d %H:%M:%S')
-    handler.setFormatter(formatter)
+
+
+    if configuration.get("logs", "print_only_logs", "False") == "False":
+        if not path:
+            path = configuration.get("logs",
+                                     "log_file_path",
+                                     "/var/log/siirto")
+        path = os.path.join(path, relative_path)
+        _create_path(path)
+        log_file_path = os.path.join(path, file_name)
+        # add a rotating handler
+        handler = RotatingFileHandler(log_file_path,
+                                      maxBytes=int(configuration.get("logs",
+                                                                     "log_file_max_bytes",
+                                                                     "10485760")),
+                                      backupCount=int(configuration.get("logs",
+                                                                        "log_file_backup_count",
+                                                                        "10")))
+        handler.setFormatter(formatter)
+    else:
+        handler = logging.StreamHandler()
+        handler.setFormatter(formatter)
+
     logger.addHandler(handler)
     log_level_name = configuration.get("logs",
                                        "log_file_log_level",
