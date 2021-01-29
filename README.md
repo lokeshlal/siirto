@@ -1,6 +1,6 @@
 ### Siirto
 
-Migrate data from database to other sinks
+Migrate data (CDC) from database to other sinks
 
 ##### Structure
 
